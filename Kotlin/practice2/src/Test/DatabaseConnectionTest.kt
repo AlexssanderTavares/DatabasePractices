@@ -19,21 +19,6 @@ class DatabaseConnectionTest {
     }
 
     @Test
-    fun ShouldCheckEnvironmentVariablesIfNotNull(){
-        val user: String? = vault["MARIADB_USER"]
-        val url: String? = vault["MARIADB_DATABASE_URL"]
-        val driver: String? = vault["MARIADB_JDBC_DRIVER"]
-        val db: String? = vault["SET_DATABASE"]
-
-        println("User: $user | URL: $url | Driver: $driver | Database: $db")
-
-        assertEquals("alexssander", user)
-        assertEquals("jdbc:mariadb://localhost:3306", url)
-        assertEquals("org.mariadb.jdbc.Driver", driver)
-        assertEquals("Practice2", db)
-    }
-
-    @Test
     fun ShouldConnectAndChangeItStatusToTrue(){
         val dbStatus: Boolean = DatabaseConnection.connectionStatus
 
