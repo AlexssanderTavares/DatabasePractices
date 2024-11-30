@@ -13,10 +13,10 @@ class DatabaseConnection {
 
     companion object{
         var connectionStatus: Boolean = false
-        val CONNECTION: Connection = this.connect()
+        val CONNECTION: Connection = this.connect("Practice2")
 
 
-        private fun connect() : Connection{
+        fun connect(database: String) : Connection{
             val vault: Dotenv = dotenv()
             val user: String? = vault["MARIADB_USER"]
             val url: String? = vault["MARIADB_DATABASE_URL"]
@@ -36,13 +36,13 @@ class DatabaseConnection {
                 println("Class.forName failed to recognize driver class")
             }
 
-            val setDatabase: PreparedStatement = dbConnection.prepareStatement("USE ${vault["SET_DATABASE"]};")
+            val setDatabase: PreparedStatement = dbConnection.prepareStatement("USE $database;")
 
             try{
                 val checkOpen = dbConnection.isClosed()
                 setDatabase.execute()
                 this.connectionStatus = true
-                println("Using: ${vault["SET_DATABASE"]} | Connection Status: ${connectionStatus}")
+                println("Using: $database | Connection Status: ${connectionStatus}")
             }catch (e: SQLException) {
                 e.message
                 e.printStackTrace()
@@ -52,5 +52,9 @@ class DatabaseConnection {
             return dbConnection
 
         }
+
+    }
+    fun checkStatus() : Boolean {
+        return connectionStatus
     }
 }
