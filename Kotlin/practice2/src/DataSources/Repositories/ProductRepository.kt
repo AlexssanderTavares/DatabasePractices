@@ -25,8 +25,7 @@ class ProductRepository(private val testEnvironment: Boolean = false) {
         var rowsAffected: Int = 0
         try {
             if (productName.length < 120 && category <= 3 || category > 0) {
-                val query: PreparedStatement =
-                    this.db.prepareStatement("INSERT INTO Product (str_name, i_quantity, i_category) VALUES ('${productName}', '${quantity}', '${category}');")
+                val query: PreparedStatement = this.db.prepareStatement("INSERT INTO Product (str_name, i_quantity, i_category) VALUES ('${productName}', '${quantity}', '${category}');")
 
                 query.execute()
                 rowsAffected += 1
@@ -91,12 +90,98 @@ class ProductRepository(private val testEnvironment: Boolean = false) {
         return product
     }
 
-    /*fun delete(productName: String) : Int {
+    fun delete(productName: String): Int {
+        var affectedRows: Int = 0
         val product: Product? = this.get(productName)
-        if(product != null){
-            val query: PreparedStatement = this.db.prepareStatement("DELETE ")
+
+        if (product != null) {
+            try {
+                val query: PreparedStatement = this.db.prepareStatement("DELETE FROM Product WHERE str_name='${productName}';")
+                query.execute()
+                affectedRows += 1
+                println("Query ok! Rows affected: ${affectedRows}")
+            } catch (e: SQLException) {
+                println(e.message)
+                e.printStackTrace()
+                println("Access error OR database is closed!")
+            }
+        } else {
+            println("Product with such name wasn't found! Rows affected: ${affectedRows}")
+            return affectedRows
         }
+        return affectedRows
+    }
 
-    }*/
+    fun updateName(productName: String, newName: String) : Int {
+        var affectedRows: Int = 0
+        val product: Product? = this.get(productName)
 
+        if(product != null){
+            try{
+                val query: PreparedStatement = this.db.prepareStatement("UPDATE Product SET str_name='${newName}' WHERE str_name='${productName}';")
+                query.execute()
+                affectedRows += 1
+                println("Query ok! Rows affected: ${affectedRows}")
+            } catch(e: SQLException) {
+                println(e.message)
+                e.printStackTrace()
+                println("Access error OR database is closed!")
+            }
+        } else {
+            println("Product with such name wasn't found! Rows affected: ${affectedRows}")
+            return affectedRows
+        }
+        return affectedRows
+    }
+
+    fun updateQuantity(productName: String, quantity: Int) : Int {
+        var affectedRows: Int = 0
+        val product: Product? = this.get(productName)
+
+        if(product != null){
+            try{
+                val query: PreparedStatement = this.db.prepareStatement("UPDATE Product SET i_quantity=${quantity} WHERE str_name='${productName}';")
+                query.execute()
+                affectedRows += 1
+                println("Query ok! Rows affected: ${affectedRows}")
+            } catch(e: SQLException) {
+                println(e.message)
+                e.printStackTrace()
+                println("Access error OR database is closed!")
+            }
+        } else {
+            println("Product with such name wasn't found! Rows affected: ${affectedRows}")
+            return affectedRows
+        }
+        return affectedRows
+    }
+
+    fun updateCategory(productName: String, category: Int) : Int {
+        var affectedRows: Int = 0
+        val product: Product? = this.get(productName)
+
+        if(product != null) {
+            try{
+                if(category <= 0 || category <= 3) {
+                    val query: PreparedStatement = this.db.prepareStatement("UPDATE Product SET i_category=${category} WHERE str_name='${productName}';")
+                    query.execute()
+                    affectedRows += 1
+                    println("Query ok! Rows affected: ${affectedRows}")
+                } else {
+                    throw RuntimeException("Category must be between 1 to 3")
+                }
+            } catch (e: SQLException) {
+                println(e.message)
+                e.printStackTrace()
+                println("Access error OR database is closed!")
+            } catch (e: RuntimeException) {
+                println(e.message)
+                e.printStackTrace()
+            }
+        } else {
+            println("Product with such name wasn't found! Rows affected: ${affectedRows}")
+            return affectedRows
+        }
+        return affectedRows
+    }
 }

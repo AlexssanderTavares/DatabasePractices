@@ -48,7 +48,50 @@ class ProductRepositoryTest {
         } catch (e: Exception){
             fail("Failed to get requested data, returned: ${product?.name}")
         }
+    }
 
+    @Test
+    fun ShouldDeleteAProductAndReturnTheNumberOfAffectedRows(){
+        var rows: Int = 0
+        try {
+            rows = this.repo.delete("TestDummy3")
+            assertEquals(1, rows)
+        } catch (e: Exception) {
+            fail("Something goes wrong when trying to delete! Rows affected: ${rows}")
+        }
+    }
+
+    @Test
+    fun ShouldReturnNumberOfAffectedRowsWhenTryingToUpdateName(){
+        var rows: Int = 0
+        try {
+            rows = this.repo.updateName("TestDummy", "Alexssander")
+            assertEquals(1, rows)
+        } catch (e: Exception) {
+            fail("Failed to update data, returned: ${rows}")
+        }
+    }
+
+    @Test
+    fun ShouldReturnNumberOfAffectedRowsWhenTryingToUpdateQuantity(){
+        var rows: Int = 0
+        try {
+            rows = this.repo.updateQuantity("Alexssander", 5)
+            assertEquals(1, rows)
+        } catch (e: Exception) {
+            fail("Failed to update data, returned: ${rows}")
+        }
+    }
+
+    @Test
+    fun ShouldReturnNumberOfAffectedRowsWhenTryingToUpdateCategory(){
+        var rows: Int = 0
+        try {
+            rows = this.repo.updateCategory("Alexssander", 2)
+            assertEquals(1, rows)
+        } catch (e: Exception) {
+            fail("Failed to update data, returned: ${rows}")
+        }
     }
 
 
