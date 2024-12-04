@@ -12,9 +12,6 @@ public class DatabaseConnection {
     public static boolean connectionStatus;
     public static Connection CONNECTION;
 
-    public DatabaseConnection(){
-
-    }
 
     public static Boolean connect(String database) {
         Dotenv vault = Dotenv.load();
