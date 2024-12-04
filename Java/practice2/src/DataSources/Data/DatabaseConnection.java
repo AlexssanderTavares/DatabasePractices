@@ -26,10 +26,13 @@ public class DatabaseConnection {
             Class<?> driver = Class.forName(vault.get("MARIADB_JDBC_DRIVER"));
             CONNECTION = DriverManager.getConnection(url, user,"");
             PreparedStatement setDatabase;
+            String dbSelected;
             if(testEnvironment) {
                 setDatabase = CONNECTION.prepareStatement("USE " + testDatabase + ";");
+                dbSelected = testDatabase;
             } else{
                 setDatabase = CONNECTION.prepareStatement("USE " + database + ";");
+                dbSelected = database;
             }
             setDatabase.execute();
             connectionStatus = true;
