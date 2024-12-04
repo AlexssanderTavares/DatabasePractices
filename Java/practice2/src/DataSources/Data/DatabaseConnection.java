@@ -6,6 +6,7 @@ import io.github.cdimascio.dotenv.DotenvEntry;
 
 import java.sql.*;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class DatabaseConnection {
 
@@ -13,20 +14,26 @@ public class DatabaseConnection {
     public static Connection CONNECTION;
 
 
-    public static Boolean connect(String database) {
+    public static Boolean connect(boolean testEnvironment) {
         Dotenv vault = Dotenv.load();
         String user = vault.get("MARIADB_USER");
         String url = vault.get("MARIADB_DATABASE_URL");
+        String database = vault.get("SET_DATABASE");
+        String testDatabase = vault.get("SET_TEST_DATABASE");
         //Connection dbConnection;
 
         try{
             Class<?> driver = Class.forName(vault.get("MARIADB_JDBC_DRIVER"));
             CONNECTION = DriverManager.getConnection(url, user,"");
-
-            PreparedStatement setDatabase = CONNECTION.prepareStatement("USE " + database + ";");
+            PreparedStatement setDatabase;
+            if(testEnvironment) {
+                setDatabase = CONNECTION.prepareStatement("USE " + testDatabase + ";");
+            } else{
+                setDatabase = CONNECTION.prepareStatement("USE " + database + ";");
+            }
             setDatabase.execute();
             connectionStatus = true;
-            System.out.println("Using: " + database + " | Connection statud: " + connectionStatus);
+            System.out.println("Using: " + database + " | Connection status: " + connectionStatus);
         }catch (SQLException e){
             System.out.println(e.getMessage());
             e.printStackTrace();

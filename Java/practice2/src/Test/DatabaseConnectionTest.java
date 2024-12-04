@@ -17,6 +17,7 @@ public class DatabaseConnectionTest {
     }
     @Test
     public void ShouldReturnDatabaseConnection(){
-        assert DatabaseConnection.connect(this.vault.get("SET_DATABASE"));
+        assert DatabaseConnection.connect(true);
+        assert DatabaseConnection.connect(false);
     }
 }
