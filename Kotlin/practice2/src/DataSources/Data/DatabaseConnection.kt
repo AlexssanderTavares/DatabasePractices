@@ -27,11 +27,11 @@ class DatabaseConnection {
                 val driver = Class.forName(vault["MARIADB_JDBC_DRIVER"])
                 dbConnection = DriverManager.getConnection(url, user, "")
             }catch (e: SQLException){
-                e.message
+                println(e.message)
                 e.printStackTrace()
                 println("Connection failed")
             }catch (e: ClassNotFoundException){
-                e.message
+                println(e.message)
                 e.printStackTrace()
                 println("Class.forName failed to recognize driver class")
             }
@@ -39,7 +39,6 @@ class DatabaseConnection {
             val setDatabase: PreparedStatement = dbConnection.prepareStatement("USE $database;")
 
             try{
-                val checkOpen = dbConnection.isClosed()
                 setDatabase.execute()
                 this.connectionStatus = true
                 println("Using: $database | Connection Status: ${connectionStatus}")

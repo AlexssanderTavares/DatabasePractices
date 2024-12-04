@@ -184,4 +184,23 @@ class ProductRepository(private val testEnvironment: Boolean = false) {
         }
         return affectedRows
     }
+
+    fun getAll() : ArrayList<Product>{
+        val productList: ArrayList<Product> = ArrayList<Product>()
+        try {
+            val query: PreparedStatement = this.db.prepareStatement("SELECT * FROM Product;")
+            val res: ResultSet = query.executeQuery()
+
+            while(res.next()){
+                val product: Product = Product(res.getString("str_name"), res.getInt("i_quantity"), res.getInt("i_category"))
+                productList.add(product)
+            }
+            return productList
+        } catch (e: SQLException){
+            println(e.message)
+            e.printStackTrace()
+            println("Access error OR database is closed!")
+        }
+        return productList
+    }
 }

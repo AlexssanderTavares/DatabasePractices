@@ -94,6 +94,17 @@ class ProductRepositoryTest {
         }
     }
 
+    @Test
+    fun ShouldReturnListOfAllRegisteredProducts(){
+        try {
+            val list: ArrayList<Product> = this.repo.getAll()
+
+            assertEquals(2, list.size)
+        } catch (e: Exception){
+            fail("Failed to get any register in database OR nothing was registered inside it.")
+        }
+    }
+
 
 
 
