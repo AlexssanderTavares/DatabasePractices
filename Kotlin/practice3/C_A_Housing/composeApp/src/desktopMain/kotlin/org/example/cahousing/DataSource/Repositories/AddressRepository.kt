@@ -26,6 +26,6 @@ class AddressRepository : Repository<Address> {
     }
 
     override suspend fun delete(model: Address): Int {
-        return db.deleteProject(model.cep)
+        return db.deleteAddress(model)
     }
 }

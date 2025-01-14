@@ -35,12 +35,12 @@ class DataBaseActions {
 
 
     // DEPT
-    suspend fun createDept(name: String, desc: String = ""): Int {
+    suspend fun createDept(dept: Dept): Int {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 val query: PreparedStatement =
-                    db.prepareStatement("INSERT INTO Dept (STR_name, STR_description) VALUES ('${name}','${desc}');")
+                    db.prepareStatement("INSERT INTO Dept (STR_name, STR_description) VALUES ('${dept.name}','${dept.description}');")
                 query.execute()
                 rows++
                 println("Query ok! Rows affected on table Dept: ${rows}")
@@ -196,20 +196,13 @@ class DataBaseActions {
     // ADDRESS
     suspend fun createAddress(address: Address): Int {
         var rows: Int = 0
-        address.cep = formatter.toCepFormat(address.cep)
-
         if (formatter.isValid(address.cep)) {
 
             val job: Job = CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val query: PreparedStatement =
                         db.prepareStatement(
-                            "INSERT INTO Address (I_cep, STR_road, STR_district, STR_city) VALUES ('${
-                                formatter.toCepFormat(
-                                    address.cep
-                                )
-                            }','${address.road}','${address.district}','${address.city}');"
-                        )
+                            "INSERT INTO Address (I_cep, STR_road, STR_district, STR_city) VALUES ('${formatter.toCepFormat(address.cep)}','${address.road}','${address.district}','${address.city}');")
                     query.execute()
                     rows++
                     println("Query ok! Rows affected on table Address: ${rows}")
@@ -504,8 +497,8 @@ class DataBaseActions {
                         res.getString("STR_name"),
                         res.getString("STR_sex"),
                         res.getDouble("F_wage"),
-                        res.getDate("dt_born_date").toString(),
-                        res.getTimestamp("time_worked_journey")?.toString(),
+                        res.getDate("dt_born_date")?.toString() ?: "0000-00-00",
+                        res.getTimestamp("time_worked_journey")?.toString() ?: "0000-00-00 00:00:00",
                         res.getString("I_ADDRESS_cep"),
                         res.getInt("I_DEPT_num")
                     )
@@ -541,8 +534,8 @@ class DataBaseActions {
                         res.getString("STR_name"),
                         res.getString("STR_sex"),
                         res.getDouble("F_wage"),
-                        res.getDate("dt_born_date")?.toString(),
-                        res.getTimestamp("time_worked_journey")?.toString(),
+                        res.getDate("dt_born_date").toString(),
+                        res.getTimestamp("time_worked_journey").toString(),
                         res.getString("I_ADDRESS_cep"),
                         res.getInt("I_DEPT_num")
                     )
@@ -584,7 +577,7 @@ class DataBaseActions {
                 }
                 val task2: Deferred<Int> = async {
                     val subQuery2: PreparedStatement =
-                        db.prepareStatement("SELECT * FROM Overseer WHERE STR_EMP_name='${name}';")
+                        db.prepareStatement("SELECT * FROM Overseer WHERE STR_EMP_name='${employee.name}';")
                     val res2: ResultSet = subQuery2.executeQuery()
                     res2.next()
 
@@ -695,7 +688,6 @@ class DataBaseActions {
 
                 if (res.row == 1) {
                     project = Project(
-                        res.getInt("I_num_project"),
                         res.getString("STR_NAME"),
                         res.getInt("I_num_dept")
                     )
@@ -727,7 +719,6 @@ class DataBaseActions {
 
                 while (res.next()) {
                     project = Project(
-                        res.getInt("I_num_project"),
                         res.getString("STR_name"),
                         res.getInt("I_num_dept")
                     )
@@ -807,7 +798,7 @@ class DataBaseActions {
 
                 if (projectData != null && employeeData != null) {
                     val query: PreparedStatement =
-                        db.prepareStatement("INSERT INTO Employee_Project (I_num_project, STR_EMP_name) VALUES ('${projectData.id}', '${employeeData.name}');")
+                        db.prepareStatement("INSERT INTO Employee_Project (STR_project, STR_employee) VALUES ('${projectData.name}', '${employeeData.name}');")
                     query.execute()
                     rows++
                     println("Query ok! Number of affected rows: ${rows}")
@@ -836,23 +827,21 @@ class DataBaseActions {
     // TODO("update method")
 
     suspend fun getProjectContract(contract: ProjectEmployeeContract): ProjectEmployeeContract? {
-        lateinit var _contract: ProjectEmployeeContract
+        var _contract: ProjectEmployeeContract? = null
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                val project: Project? = getProject(contract.project.name)
-                val employee: Employee? = getEmployee(contract.employee.name)
-                val query: PreparedStatement =
-                    db.prepareStatement("SELECT * FROM Employee_Project WHERE I_num_project='${project?.id};'")
+                val query: PreparedStatement = db.prepareStatement("SELECT * FROM Employee_Project WHERE STR_project ='${contract.project.name}';")
                 val res: ResultSet = query.executeQuery()
                 res.next()
 
                 if (res.row == 1) {
-                    _contract = ProjectEmployeeContract(
+                    val data: ProjectEmployeeContract = ProjectEmployeeContract(
                         res.getInt("id_contract"),
-                        project!!,
-                        employee!!
+                        getProject(res.getString("STR_project"))!!,
+                        getEmployee(res.getString("STR_employee"))!!
                     )
-                    println("Query Ok! Object returned: ${project}")
+                    _contract = data
+                    println("Query Ok! Object returned: ${_contract}")
                 } else {
                     throw SQLException("Register doesn't exist.")
                 }
@@ -931,14 +920,14 @@ class DataBaseActions {
 
     // OVERSEER
 
-    suspend fun createOverseer(empName: String, wage: Double): Int {
+    suspend fun createOverseer(overseer: Overseer): Int {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                val employee: Employee? = getEmployee(empName)
+                val employee: Employee? = getEmployee(overseer.empName)
 
                 val query: PreparedStatement =
-                    db.prepareStatement("INSERT INTO Overseer (STR_EMP_name, F_wage) VALUES ('${employee?.name}', '${wage}');")
+                    db.prepareStatement("INSERT INTO Overseer (STR_EMP_name, F_wage) VALUES ('${employee?.name}', '${overseer.wage}');")
                 query.execute()
                 rows++
                 println("Query OK! Number of affected rows: ${rows}")
@@ -959,22 +948,22 @@ class DataBaseActions {
 
     // TODO("Update method")
 
-    suspend fun getOverseer(empName: String): Overseer? {
-        lateinit var overseer: Overseer
+    suspend fun getOverseer(overseer: Overseer): Overseer? {
+        lateinit var _overseer: Overseer
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 val query: PreparedStatement =
-                    db.prepareStatement("SELECT * FROM Overseer WHERE STR_EMP_name='${empName}';")
+                    db.prepareStatement("SELECT * FROM Overseer WHERE STR_EMP_name='${overseer.empName}';")
                 val res: ResultSet = query.executeQuery()
                 res.next()
 
-                overseer = Overseer(
+                _overseer = Overseer(
                     res.getInt("I_id"),
                     res.getString("STR_EMP_name"),
                     res.getDouble("F_wage"),
-                    res.getTimestamp("time_worked_journey")?.toString()
+                    res.getTimestamp("time_worked_journey")?.toString() ?: "0000-00-00 00:00:00"
                 )
-                println("Query OK! Object returned: ${overseer}")
+                println("Query OK! Object returned: ${_overseer}")
             } catch (e: SQLException) {
                 e.printStackTrace()
                 println("Failed to return data due to: ${e.message}")

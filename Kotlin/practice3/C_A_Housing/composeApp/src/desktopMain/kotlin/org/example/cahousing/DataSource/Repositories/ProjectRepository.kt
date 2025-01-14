@@ -27,7 +27,7 @@ class ProjectRepository : Repository<Project> {
     }
 
     override suspend fun delete(model: Project): Int {
-        return db.deleteProject(model.name)
+        return db.deleteProject(model)
     }
 
 }

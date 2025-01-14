@@ -1,7 +1,7 @@
 package org.example.cahousing.DataSource.Models
 
 data class Employee(
-    val id: Int,
+    var id: Int? = null,
     val name: String,
     val sex: String,
     var wage: Double = 0.0,

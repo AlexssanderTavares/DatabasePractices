@@ -26,7 +26,7 @@ class EmployeeRepository : Repository<Employee>{
     }
 
     override suspend fun delete(model: Employee): Int {
-        return db.deleteEmployee(model.name)
+        return db.deleteEmployee(model)
     }
 
 }

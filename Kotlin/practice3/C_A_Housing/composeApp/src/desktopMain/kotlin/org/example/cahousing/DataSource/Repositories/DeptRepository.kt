@@ -12,7 +12,7 @@ class DeptRepository : Repository<Dept> {
     }
 
     override suspend fun create(model: Dept): Int {
-        return db.createDept(model.name, model.description)
+        return db.createDept(model)
     }
 
     override suspend fun get(model: Dept): Dept? {

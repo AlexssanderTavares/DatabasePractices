@@ -11,11 +11,11 @@ class OverseerRepository : Repository<Overseer>{
 
 
     override suspend fun create(model: Overseer): Int {
-        TODO("Not yet implemented")
+        return db.createOverseer(model)
     }
 
     override suspend fun get(model: Overseer): Overseer? {
-        TODO("Not yet implemented")
+        return db.getOverseer(model)
     }
 
     override suspend fun update(model: Overseer, vararg newData: Any): Int {
@@ -27,7 +27,7 @@ class OverseerRepository : Repository<Overseer>{
     }
 
     override suspend fun delete(model: Overseer): Int {
-        TODO("Not yet implemented")
+        return db.deleteOverseer(model.empName)
     }
 
 }
