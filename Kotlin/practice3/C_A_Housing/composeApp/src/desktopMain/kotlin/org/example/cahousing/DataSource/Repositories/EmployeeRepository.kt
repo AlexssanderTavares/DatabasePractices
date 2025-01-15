@@ -17,8 +17,9 @@ class EmployeeRepository : Repository<Employee>{
         return db.getEmployee(model.name)
     }
 
-    override suspend fun update(model: Employee, vararg newData: Any): Int {
-        return db.updateEmployee(model, newData)
+    override suspend fun update(model: Employee, data: Employee): Int {
+        return db.updateEmployee(model, data)
+        //TODO("Must update method definition")
     }
 
     override suspend fun getAll() : ArrayList<Employee> {

@@ -16,11 +16,11 @@ class DeptRepository : Repository<Dept> {
     }
 
     override suspend fun get(model: Dept): Dept? {
-        return db.getDept(model.name)
+        return db.getDept(model)
     }
 
-    override suspend fun update(model: Dept, vararg newData: Any): Int {
-        return db.updateDept(model.name, newData.toString())
+    override suspend fun update(model: Dept, data: Dept): Int {
+        return db.updateDept(model, data)
     }
 
     override suspend fun getAll(): ArrayList<Dept> {
@@ -28,9 +28,7 @@ class DeptRepository : Repository<Dept> {
     }
 
     override suspend fun delete(model: Dept): Int {
-
-        return db.deleteDept(model.name)
-
+        return db.deleteDept(model)
     }
 
 

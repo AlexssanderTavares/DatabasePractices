@@ -14,11 +14,11 @@ class AddressRepository : Repository<Address> {
     }
 
     override suspend fun get(model: Address): Address? {
-        return db.getAddress(model.cep)
+        return db.getAddress(model)
     }
 
-    override suspend fun update(model: Address, vararg newData: Any): Int {
-        return db.updateAddress(model, newData)
+    override suspend fun update(model: Address, data: Address): Int {
+        return db.updateAddress(model, data)
     }
 
     override suspend fun getAll() : ArrayList<Address> {

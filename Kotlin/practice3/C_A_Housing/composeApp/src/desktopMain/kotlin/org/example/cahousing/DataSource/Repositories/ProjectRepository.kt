@@ -18,8 +18,9 @@ class ProjectRepository : Repository<Project> {
         return db.getProject(model.name)
     }
 
-    override suspend fun update(model: Project, vararg newData: Any): Int {
-        return db.updateProject(model, newData)
+    override suspend fun update(model: Project, data: Project): Int {
+        return db.updateProject(model, data)
+        //TODO("Must update method definition")
     }
 
     override suspend fun getAll() : ArrayList<Project> {

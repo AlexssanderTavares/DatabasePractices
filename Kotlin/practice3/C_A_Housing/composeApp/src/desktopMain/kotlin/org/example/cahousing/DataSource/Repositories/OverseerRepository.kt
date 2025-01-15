@@ -18,8 +18,8 @@ class OverseerRepository : Repository<Overseer>{
         return db.getOverseer(model)
     }
 
-    override suspend fun update(model: Overseer, vararg newData: Any): Int {
-        TODO("Not yet implemented")
+    override suspend fun update(model: Overseer, data: Overseer): Int {
+        return db.updateOverseer(model, data)
     }
 
     override suspend fun getAll() : ArrayList<Overseer> {
@@ -27,7 +27,7 @@ class OverseerRepository : Repository<Overseer>{
     }
 
     override suspend fun delete(model: Overseer): Int {
-        return db.deleteOverseer(model.empName)
+        return db.deleteOverseer(model)
     }
 
 }

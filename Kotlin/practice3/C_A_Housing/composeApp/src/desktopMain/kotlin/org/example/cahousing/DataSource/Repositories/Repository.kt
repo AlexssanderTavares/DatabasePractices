@@ -6,7 +6,7 @@ interface Repository<T: Models> {
 
     suspend fun create(model: T) : Int
 
-    suspend fun update(model: T, vararg newData: Any) : Int
+    suspend fun update(model: T, data: T) : Int
 
     suspend fun get(model: T) : T?
 
