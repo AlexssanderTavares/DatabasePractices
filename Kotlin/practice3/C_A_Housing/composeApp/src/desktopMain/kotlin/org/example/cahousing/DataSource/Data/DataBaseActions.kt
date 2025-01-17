@@ -255,6 +255,8 @@ class DataBaseActions {
                     println("Failed to update data due to: ${e.message}. Rows affected: ${rows}")
                     e.printStackTrace()
                 }
+            }else {
+                throw IllegalArgumentException("${address} doesn't exist.")
             }
         }
         job.join()
@@ -392,56 +394,27 @@ class DataBaseActions {
         }
     }
 
-    suspend fun updateEmployee(employee: Employee, vararg newData: Any): Int {
+    suspend fun updateEmployee(employee: Employee, newData: Employee): Int {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try{
-                if(getEmployee(employee.name) != null) {
-                    when(newData.size){
-                        1 -> {
-                            if(newData[0] is Double) {
-                                val query: PreparedStatement = db.prepareStatement("UPDATE Employee SET F_wage='${newData[0]}' WHERE STR_name='${employee.name}';")
-                                query.execute()
-                                rows++
-                            } else{
-                                throw IllegalArgumentException("The data must follow it respective type. The first must be Double.")
-                            }
-                        }
+                val data: Employee? = getEmployee(employee.name)
 
-                        2 -> {
-                            if(newData[0] is Double && newData[1] is String){
-                                //must create a string formatter for timestamp data pattern
-                                val query: PreparedStatement = db.prepareStatement("UPDATE Employee SET F_wage='${newData[0]}', time_worked_journey='${newData[1]}' WHERE STR_name='${employee.name}';")
-                                query.execute()
-                                rows++
-                            } else {
-                                throw IllegalArgumentException("The data must follow it respective type. The first must be Double and the second must be String. Number of rows affected: ${rows}")
-                            }
-                        }
+                if(data != null && data.name == newData.name) {
 
-                        3 -> {
-                            if(newData[0] is Double && newData[1] is String && newData[2] is String) {
-                                val query: PreparedStatement = db.prepareStatement("UPDATE Employee SET F_wage='${newData[0]}', time_worked_journey='${newData[1]}', I_ADDRESS_cep='${formatter.toCepFormat(newData[2].toString())}' WHERE STR_name='${employee.name}';")
-                                query.execute()
-                                rows++
-                            } else {
-                                throw IllegalArgumentException("The data must follow it respective type. The first must be Double and the second must be String. Number of rows affected: ${rows}")
-                            }
-                        }
-
-                        4 -> {
-                            if(newData[0] is Double && newData[1] is String && newData[2] is String && newData[3] is Int) {
-                                val query: PreparedStatement = db.prepareStatement("UPDATE Employee SET F_wage='${newData[0]}', time_worked_journey='${newData[1]}', I_ADDRESS_cep='${formatter.toCepFormat(newData[2].toString())}', I_DEPT_num='${newData[3]}' WHERE STR_name='${employee.name}';")
-                                query.execute()
-                                rows++
-                            } else {
-                                throw IllegalArgumentException("The data must follow it respective type. The first must be Double and the second must be String. Number of rows affected: ${rows}")
-                            }
-                        }
-                        else -> {
-                            throw IllegalArgumentException("The arguments must fulfill the right sequence: [DOUBLE,STRING,STRING,INT] in order to be valid. Number of rows affected: ${rows}")
-                        }
+                    if(data.wage != newData.wage){
+                        val query: PreparedStatement = db.prepareStatement("UPDATE Employee SET F_wage='${newData.wage}' WHERE STR_name='${data.name}';")
+                        query.execute()
                     }
+
+                    if(data.timeWorked != newData.timeWorked) {
+                        val query: PreparedStatement = db.prepareStatement("UPDATE Employee SET time_worked_journey='${newData.timeWorked}' WHERE STR_name='${data.name}';")
+                        query.execute()
+                    }
+                    rows++
+                    println("Query OK! Number of affected rows: ${rows}")
+                } else{
+                    throw IllegalArgumentException("${employee} doesn't exist.")
                 }
             }catch (e: SQLException){
                 println("Failed to update data due to: ${e.message}. Rows affected: ${rows}")
@@ -610,33 +583,26 @@ class DataBaseActions {
         }
     }
 
-    suspend fun updateProject(project: Project, vararg newData: Any) : Int {
+    suspend fun updateProject(project: Project, newData: Project) : Int {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                if(getProject(project.name) != null) {
-                    when(newData.size) {
-                        1 -> {
-                            if(newData[0]  is String) {
-                                val query: PreparedStatement = db.prepareStatement("UPDATE Project SET STR_name='${newData[0]}' WHERE STR_name='${project.name}';")
-                                query.execute()
-                                rows++
-                                println("Query Ok! Number of affected rows: ${rows}")
-                            }
-                        }
-
-                        2 -> {
-                            if(newData[0]  is String && newData[1] is Int) {
-                                val query: PreparedStatement = db.prepareStatement("UPDATE Project SET STR_name='${newData[0]}', I_num_dept='${newData[1]}' WHERE STR_name='${project.name}';")
-                                query.execute()
-                                rows++
-                                println("Query Ok! Number of affected rows: ${rows}")
-                            }
-                        }
-                        else -> {
-                            throw IllegalArgumentException("The arguments must fulfill the right sequence: [STRING, INT] in order to be valid. Number of rows affected: ${rows}")
-                        }
+                val data: Project? = getProject(project.name)
+                if(data != null) {
+                    if(data.name != newData.name){
+                        val query: PreparedStatement = db.prepareStatement("UPDATE Project SET STR_name='${newData.name}' WHERE STR_name='${data.name}';")
+                        query.execute()
                     }
+
+                    if(data.dept != newData.dept) {
+                        val query: PreparedStatement = db.prepareStatement("UPDATE Project SET I_num_dept='${newData.dept}' WHERE STR_name='${data.name}';")
+                        query.execute()
+                    }
+
+                    rows++
+                    println("Query OK! Number of affected rows: ${rows}")
+                }else{
+                    throw IllegalArgumentException("${project} doesn't exist.")
                 }
 
             } catch (e: SQLException) {
@@ -799,7 +765,30 @@ class DataBaseActions {
         }
     }
 
-    // TODO("update method")
+    suspend fun updateProjectContract(contract: ProjectEmployeeContract, newData: ProjectEmployeeContract) : Int {
+        var rows: Int = 0
+        val job: Job = CoroutineScope(Dispatchers.IO).launch {
+            try{
+                val data: ProjectEmployeeContract? = getProjectContract(contract.project.name)
+                if(data != null && data.description != newData.description) {
+                    val query: PreparedStatement = db.prepareStatement("UPDATE Employee_Project SET STR_description='${newData.description}' WHERE STR_project='${data.project.name}';")
+                    query.execute()
+                }
+                rows++
+                println("Query OK! Number of affected rows: ${rows}")
+            } catch (e: SQLException){
+                println("Failed to update data due to: ${e.message}")
+                e.printStackTrace()
+            }
+        }
+
+        job.join()
+        return if(job.isCompleted){
+            rows
+        }else{
+            rows
+        }
+    }
 
     suspend fun getProjectContract(project: String): ProjectEmployeeContract? {
         var _contract: ProjectEmployeeContract? = null
@@ -813,7 +802,8 @@ class DataBaseActions {
                     val data: ProjectEmployeeContract = ProjectEmployeeContract(
                         res.getInt("id_contract"),
                         getProject(res.getString("STR_project"))!!,
-                        getEmployee(res.getString("STR_employee"))!!
+                        getEmployee(res.getString("STR_employee"))!!,
+                        res.getString("STR_description")
                     )
                     _contract = data
                     println("Query Ok! Object returned: ${_contract}")
