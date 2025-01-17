@@ -14,8 +14,8 @@ class EmployeeProjectContractRepository : Repository<ProjectEmployeeContract> {
         return db.createProjectContract(model.project, model.employee)
     }
 
-    override suspend fun get(model: ProjectEmployeeContract): ProjectEmployeeContract? {
-        return db.getProjectContract(model)
+    override suspend fun get(projectName: String): ProjectEmployeeContract? {
+        return db.getProjectContract(projectName)
     }
 
     override suspend fun update(model: ProjectEmployeeContract, data: ProjectEmployeeContract): Int {

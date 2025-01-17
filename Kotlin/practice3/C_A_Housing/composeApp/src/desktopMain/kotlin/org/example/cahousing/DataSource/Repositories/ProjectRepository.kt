@@ -14,8 +14,8 @@ class ProjectRepository : Repository<Project> {
         return db.createProject(model)
     }
 
-    override suspend fun get(model: Project): Project? {
-        return db.getProject(model.name)
+    override suspend fun get(projectName: String): Project? {
+        return db.getProject(projectName)
     }
 
     override suspend fun update(model: Project, data: Project): Int {

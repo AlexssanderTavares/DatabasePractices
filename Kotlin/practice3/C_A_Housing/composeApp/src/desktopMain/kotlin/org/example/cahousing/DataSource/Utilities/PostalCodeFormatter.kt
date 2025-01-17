@@ -6,9 +6,13 @@ class PostalCodeFormatter() {
         val builder: StringBuilder = StringBuilder()
 
         if (this.isValid(cep)) {
-            builder.append(cep.get(0)).append(cep.get(1)).append(".").append(cep.get(2))
-                .append(cep.get(3)).append(cep.get(4)).append("-").append(cep.get(5))
-                .append(cep.get(6)).append(cep.get(7))
+            if(cep.contains(".") && cep.contains("-")){
+                return cep
+            } else {
+                builder.append(cep.get(0)).append(cep.get(1)).append(".").append(cep.get(2))
+                    .append(cep.get(3)).append(cep.get(4)).append("-").append(cep.get(5))
+                    .append(cep.get(6)).append(cep.get(7))
+            }
         } else {
             println("Argument length: ${cep.length}, argument size below the CEP pattern.")
             throw IllegalArgumentException("Argument must have length 9")
@@ -24,7 +28,8 @@ class PostalCodeFormatter() {
             true
         }else if(
             postalCode.length == 10 &&
-            postalCode.contains(".-") &&
+            postalCode.contains(".") &&
+            postalCode.contains("-") &&
             !postalCode.contains("abcdefghijklmnopqrstuvwxyz") &&
             !postalCode.contains("abcdefghijklmnopqrstuvwxyz".uppercase())){
             true

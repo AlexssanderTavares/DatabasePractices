@@ -64,7 +64,7 @@ class DepartmentsViewModel: ViewModel() {
             println("DepartmentsViewModel: Accessing repository for getting data...")
             delay(2000)
             repo = DeptRepository()
-            val department: Dept? = repo.get(dept)
+            val department: Dept? = repo.get(dept.name)
             _getResult.value = department
         }
     }

@@ -14,8 +14,8 @@ class OverseerRepository : Repository<Overseer>{
         return db.createOverseer(model)
     }
 
-    override suspend fun get(model: Overseer): Overseer? {
-        return db.getOverseer(model)
+    override suspend fun get(name: String): Overseer? {
+        return db.getOverseer(name)
     }
 
     override suspend fun update(model: Overseer, data: Overseer): Int {

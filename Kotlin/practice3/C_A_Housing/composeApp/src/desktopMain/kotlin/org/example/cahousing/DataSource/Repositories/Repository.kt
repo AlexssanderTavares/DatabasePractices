@@ -8,7 +8,7 @@ interface Repository<T: Models> {
 
     suspend fun update(model: T, data: T) : Int
 
-    suspend fun get(model: T) : T?
+    suspend fun get(varchar: String) : T?
 
     suspend fun getAll() : ArrayList<T>
 

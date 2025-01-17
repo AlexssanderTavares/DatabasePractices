@@ -21,21 +21,6 @@ class DataBaseActionsTest {
     private val dbActions: DataBaseActions = DataBaseActions()
     private val formatter: PostalCodeFormatter = PostalCodeFormatter()
 
-    // SUPPORT METHODS
-    @Test
-    fun MustReceiveAndFormatAStringNumberToCepAddressFormatAndReturnAString() {
-        try {
-            println("Trying to format String passed as argument")
-            val str: String = formatter.toCepFormat("11714450")
-            println("CEP formated String: ${str}")
-            assertEquals("11.714-450", str)
-            println("Test succeed!")
-        } catch (e: IllegalArgumentException) {
-            println("Error due to an invalid argument passed | ${e.message}")
-            fail("Test failed!")
-        }
-    }
-
     // DEPT CONTEXT
     @Test
     fun ShouldCreateANewDeptAndReturnTheNumberOfAffectedRows() {
@@ -53,26 +38,6 @@ class DataBaseActionsTest {
     }
 
     @Test
-    fun ShouldGetADeptDataAndReturnObject() {
-        runBlocking {
-            try {
-                println("Trying to return Dept table data")
-                val oldData: Dept = Dept(name = "Test Department", description = "A department for test purpose.")
-                val target: Dept? = dbActions.getDept(oldData)
-                println("Data returned: ${target.toString()}")
-                assertNotEquals(null, target)
-                assertEquals(1, target?.id)
-                assertEquals("Test Department", target?.name)
-                println("Test succeed!")
-            } catch (e: Exception) {
-                e.printStackTrace()
-                println("Failed to insert data due to a method error | ${e.message}")
-                fail("Test failed")
-            }
-        }
-    }
-
-    @Test
     fun ShouldUpdateDeptAndReturnTheNumberOfAffectedRows(){
         runBlocking {
             try{
@@ -83,6 +48,26 @@ class DataBaseActionsTest {
                 println("Test Succeed!")
             } catch (e: Exception){
                 fail("Test failed due to: ${e.message}")
+            }
+        }
+    }
+
+    @Test
+    fun ShouldGetADeptDataAndReturnObject() {
+        runBlocking {
+            try {
+                println("Trying to return Dept table data")
+                val oldData: Dept = Dept(name = "Test Department", description = "A department for test purpose.")
+                val target: Dept? = dbActions.getDept(oldData.name)
+                println("Data returned: ${target.toString()}")
+                assertNotEquals(null, target)
+                assertEquals(1, target?.id)
+                assertEquals("Test Department", target?.name)
+                println("Test succeed!")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                println("Failed to insert data due to a method error | ${e.message}")
+                fail("Test failed")
             }
         }
     }
@@ -138,12 +123,27 @@ class DataBaseActionsTest {
     }
 
     @Test
+    fun ShouldUpdateAddressAndReturnTheNumberOfAffectedRows() {
+        runBlocking {
+            try {
+                println("Trying to update Address data...")
+                val address: Address = Address("11715550","Rua Frei Antonio do Salvamento, 253", "Ribeirão", "Praia Pequena")
+                val address2: Address = Address("11715550","Rua Frei Padre do Balão, 257", "Ribeiros", "Praia Longa")
+                assertEquals(1, dbActions.updateAddress(address, address2))
+                println("Test Succeed")
+            }catch (e:Exception) {
+                fail("Test failed due to: ${e.message}")
+            }
+        }
+    }
+
+    @Test
     fun ShouldGetAnAdressDataFromDataBaseAndReturnObject() {
         runBlocking {
             try {
                 println("Trying to return data from table Address.")
                 val address: Address = Address("11715550","Rua Frei Antonio do Salvamento, 253", "Ribeirão", "Praia Pequena")
-                val target: Address? = dbActions.getAddress(address)
+                val target: Address? = dbActions.getAddress(address.cep)
                 println("Returned object: ${target}")
                 assertNotEquals(null, target)
                 assertEquals("11.715-550", target?.cep)
@@ -177,7 +177,19 @@ class DataBaseActionsTest {
         }
     }
 
-    //TODO("Delete method must be tested")
+    @Test
+    fun ShouldDeleteAddressAndReturnTheNumberOfAffectedRows(){
+        runBlocking {
+            try {
+                println("Trying to delete an Address data...")
+                val address: Address = Address(formatter.toCepFormat("11715550"),"Rua Frei Antonio do Salvamento, 253", "Ribeirão", "Praia Pequena")
+                assertEquals(1, dbActions.deleteAddress(address))
+                println("Test Succeed!")
+            } catch (e: Exception) {
+                fail("Test failed due to: ${e.message}")
+            }
+        }
+    }
 
     // EMPLOYEE CONTEXT
 
@@ -199,6 +211,8 @@ class DataBaseActionsTest {
             }
         }
     }
+
+    //TODO("Update method")
 
     @Test
     fun ShouldGetAnEmployeeDataFromDataBaseAndReturnObject() {
@@ -274,6 +288,8 @@ class DataBaseActionsTest {
         }
     }
 
+    //TODO("Update method")
+
     @Test
     fun ShouldGetAProjectDataFromDataBaseAndReturnObject() {
         runBlocking {
@@ -345,6 +361,8 @@ class DataBaseActionsTest {
         }
     }
 
+    //TODO("Update Method")
+
     @Test
     fun ShouldGetContractEmployee_ProjectWhenPassingProjectNameAsArgument(){
         runBlocking {
@@ -352,9 +370,8 @@ class DataBaseActionsTest {
                 println("Trying to get registered contract by project name...")
                 val project: Project = Project("Test Project", 1)
                 val employee: Employee = Employee(name ="TestBot", sex = "Female", wage = 1357.51, bornDate = "1996-04-04", address = formatter.toCepFormat("11715550"), idDept = 1)
-                val contract: ProjectEmployeeContract = ProjectEmployeeContract(project = project, employee = employee)
 
-                val target: ProjectEmployeeContract? = dbActions.getProjectContract(contract)
+                val target: ProjectEmployeeContract? = dbActions.getProjectContract(project.name)
                 assertNotEquals(null, target)
                 println("Returned object: ${target}")
                 employee.id = target?.employee?.id
@@ -443,7 +460,7 @@ class DataBaseActionsTest {
             try{
                 println("Trying to get Overseer data from database...")
                 val overseer: Overseer = Overseer(empName="TestBot", wage = 4000.00)
-                val target: Overseer? = dbActions.getOverseer(overseer)
+                val target: Overseer? = dbActions.getOverseer(overseer.empName)
                 assertNotEquals(null, target)
                 assertEquals("TestBot", target?.empName)
                 assertEquals(4000.00, target?.wage)
@@ -472,7 +489,6 @@ class DataBaseActionsTest {
             }
         }
     }
-
 
     @Test
     fun ShouldDeleteOverseerAndReturnTheNumberOfAffectedRows() {

@@ -24,6 +24,7 @@ import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Timestamp
 import java.util.InvalidPropertiesFormatException
+import javax.swing.text.html.HTMLDocument.HTMLReader.PreAction
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -59,12 +60,12 @@ class DataBaseActions {
         }
     }
 
-    suspend fun getDept(dept: Dept): Dept? {
+    suspend fun getDept(deptName: String): Dept? {
         lateinit var data: Dept
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 val query: PreparedStatement =
-                    db.prepareStatement("SELECT * FROM Dept WHERE STR_name = '${dept.name}';")
+                    db.prepareStatement("SELECT * FROM Dept WHERE STR_name = '${deptName}';")
                 val res: ResultSet = query.executeQuery()
                 res.next()
 
@@ -97,7 +98,7 @@ class DataBaseActions {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                val oldData: Dept? = getDept(dept)
+                val oldData: Dept? = getDept(dept.name)
                 if(oldData != null && data.name == oldData.name){
                     if(oldData.description != data.description){
                         val query: PreparedStatement = db.prepareStatement("UPDATE Dept SET STR_description='${data.description}' WHERE STR_name='${oldData.name}';")
@@ -213,53 +214,37 @@ class DataBaseActions {
         }
     }
 
-    suspend fun updateAddress(address: Address, vararg newData: Any): Int {
+    suspend fun updateAddress(address: Address, newData: Address): Int {
         var rows: Int = 0
         address.cep = formatter.toCepFormat(address.cep)
-
+        newData.cep = formatter.toCepFormat(newData.cep)
 
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             if (formatter.isValid(address.cep)) {
                 try {
-                    val data: Address = getAddress(address)
-                        ?: throw NullPointerException("There is no such data.")
 
-                    when (newData.size) {
-                        1 -> {
+                    val data: Address? = getAddress(address.cep)
+                    if(data != null && data.cep == address.cep){
+
+                        if(data.road != newData.road) {
                             val query: PreparedStatement =
-                                db.prepareStatement("UPDATE Address SET I_cep='${newData[0]}' WHERE I_cep='${data.cep}';")
+                                db.prepareStatement("UPDATE Address SET STR_road='${newData.road}' WHERE I_cep='${data.cep}';")
                             query.execute()
-                            rows++
-                            println("Query Ok! Number of affected rows: ${rows}")
                         }
 
-                        2 -> {
+                        if(data.city != newData.city){
                             val query: PreparedStatement =
-                                db.prepareStatement("UPDATE Address SET I_cep='${newData[0]}, STR_road='${newData[1]}' WHERE I_cep='${data.cep}';")
+                                db.prepareStatement("UPDATE Address SET STR_city='${newData.city}' WHERE I_cep='${data.cep}';")
                             query.execute()
-                            rows++
-                            println("Query Ok! Number of affected rows: ${rows}")
                         }
 
-                        3 -> {
+                        if(data.district != newData.district){
                             val query: PreparedStatement =
-                                db.prepareStatement(("UPDATE Address SET I_cep='${newData[0]}', STR_road='${newData[1]}', STR_district='${newData[2]}' WHERE I_cep='${data.cep}';"))
+                                db.prepareStatement("UPDATE Address SET STR_district='${newData.district}' WHERE I_cep='${data.district}';")
                             query.execute()
-                            rows++
-                            println("Query Ok! Number of affected rows: ${rows}")
                         }
-
-                        4 -> {
-                            val query: PreparedStatement =
-                                db.prepareStatement("UPDATE Address SET I_cep='${newData[0]}', STR_road='${newData[1]}', STR_district='${newData[2]}'. STR_city='${newData[3]}' WHERE I_cep='${data.cep}';")
-                            query.execute()
-                            rows++
-                            println("Query Ok! Number of affected rows: ${rows}")
-                        }
-
-                        else -> {
-                            throw RuntimeException("There is no data to be updated.")
-                        }
+                        rows++
+                        println("Query OK! Number of affected rows: ${rows}.")
                     }
 
                 } catch (e: SQLException) {
@@ -270,8 +255,6 @@ class DataBaseActions {
                     println("Failed to update data due to: ${e.message}. Rows affected: ${rows}")
                     e.printStackTrace()
                 }
-
-
             }
         }
         job.join()
@@ -282,19 +265,16 @@ class DataBaseActions {
         }
     }
 
-    suspend fun getAddress(address: Address): Address? {
-        var formatedCep: String = ""
-        if(formatter.isValid(address.cep)) {
-           formatedCep = formatter.toCepFormat(address.cep)
-        }else{
-            throw IllegalArgumentException("${address.cep} is not a valid postal code.")
+    suspend fun getAddress(cep: String): Address? {
+        if(!formatter.isValid(cep)) {
+            throw IllegalArgumentException("${cep} is not a valid postal code.")
         }
         lateinit var data: Address
 
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 val query: PreparedStatement =
-                    db.prepareStatement("SELECT * FROM Address WHERE I_cep='${formatedCep}', STR_road='${address.road}', STR_district='${address.district}', STR_city='${address.city}';")
+                    db.prepareStatement("SELECT * FROM Address WHERE I_cep='${cep}';")
                 val res: ResultSet = query.executeQuery()
                 res.next()
 
@@ -317,7 +297,7 @@ class DataBaseActions {
         job.join()
 
         return if (job.isCompleted) {
-            address
+            data
         } else {
             null
         }
@@ -360,7 +340,7 @@ class DataBaseActions {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try{
-                val data: Address = getAddress(address) ?: throw NullPointerException("There is no such data.")
+                val data: Address = getAddress(address.cep) ?: throw NullPointerException("There is no such data.")
                 val query: PreparedStatement = db.prepareStatement("DELETE FROM Address WHERE I_cep='${address.cep}';")
                 query.execute()
                 rows++
@@ -821,11 +801,11 @@ class DataBaseActions {
 
     // TODO("update method")
 
-    suspend fun getProjectContract(contract: ProjectEmployeeContract): ProjectEmployeeContract? {
+    suspend fun getProjectContract(project: String): ProjectEmployeeContract? {
         var _contract: ProjectEmployeeContract? = null
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                val query: PreparedStatement = db.prepareStatement("SELECT * FROM Employee_Project WHERE STR_project ='${contract.project.name}';")
+                val query: PreparedStatement = db.prepareStatement("SELECT * FROM Employee_Project WHERE STR_project ='${project}';")
                 val res: ResultSet = query.executeQuery()
                 res.next()
 
@@ -892,7 +872,7 @@ class DataBaseActions {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                val data: ProjectEmployeeContract? = getProjectContract(contract)
+                val data: ProjectEmployeeContract? = getProjectContract(contract.project.name)
                 val query: PreparedStatement =
                     db.prepareStatement("DELETE FROM Employee_Project WHERE id_contract='${data?.id}';")
                 query.execute()
@@ -945,7 +925,7 @@ class DataBaseActions {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try{
-                val oldData: Overseer? = getOverseer(overseer)
+                val oldData: Overseer? = getOverseer(overseer.empName)
                 if(oldData != null && oldData.empName == data.empName){
                     if(oldData.wage != data.wage) {
                         val query: PreparedStatement =
@@ -978,12 +958,12 @@ class DataBaseActions {
         }
     }
 
-    suspend fun getOverseer(overseer: Overseer): Overseer? {
+    suspend fun getOverseer(name: String): Overseer? {
         lateinit var _overseer: Overseer
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 val query: PreparedStatement =
-                    db.prepareStatement("SELECT * FROM Overseer WHERE STR_EMP_name='${overseer.empName}';")
+                    db.prepareStatement("SELECT * FROM Overseer WHERE STR_EMP_name='${name}';")
                 val res: ResultSet = query.executeQuery()
                 res.next()
 
@@ -1003,7 +983,7 @@ class DataBaseActions {
         job.join()
 
         return if (job.isCompleted) {
-            overseer
+            _overseer
         } else {
             null
         }

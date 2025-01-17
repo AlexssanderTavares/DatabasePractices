@@ -15,8 +15,8 @@ class DeptRepository : Repository<Dept> {
         return db.createDept(model)
     }
 
-    override suspend fun get(model: Dept): Dept? {
-        return db.getDept(model)
+    override suspend fun get(name: String): Dept? {
+        return db.getDept(name)
     }
 
     override suspend fun update(model: Dept, data: Dept): Int {

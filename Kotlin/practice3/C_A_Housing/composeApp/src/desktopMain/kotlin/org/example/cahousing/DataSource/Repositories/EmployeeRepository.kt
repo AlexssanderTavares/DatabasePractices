@@ -13,8 +13,8 @@ class EmployeeRepository : Repository<Employee>{
         return db.createEmployee(model)
     }
 
-    override suspend fun get(model: Employee): Employee? {
-        return db.getEmployee(model.name)
+    override suspend fun get(name: String): Employee? {
+        return db.getEmployee(name)
     }
 
     override suspend fun update(model: Employee, data: Employee): Int {
