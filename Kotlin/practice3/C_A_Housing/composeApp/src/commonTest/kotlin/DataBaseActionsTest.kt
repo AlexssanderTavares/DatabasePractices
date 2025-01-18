@@ -22,6 +22,7 @@ class DataBaseActionsTest {
     private val formatter: PostalCodeFormatter = PostalCodeFormatter()
 
     // DEPT CONTEXT
+    
     @Test
     fun ShouldCreateANewDeptAndReturnTheNumberOfAffectedRows() {
         runBlocking {
@@ -102,7 +103,6 @@ class DataBaseActionsTest {
             }
         }
     }
-
 
     // ADDRESS CONTEXT
 
@@ -212,7 +212,20 @@ class DataBaseActionsTest {
         }
     }
 
-    //TODO("Update method")
+    @Test
+    fun ShouldUpdateEmployeeAndReturnTheNumberOfAffectedRows() {
+        runBlocking {
+          try {
+              println("Trying to update Employee data...")
+              val employee: Employee = dbActions.getEmployee("TestBot")!!
+              val newEmp = Employee(name = "TestBot", wage = 6000.00, address = "11715550", idDept = 1, sex = "Male")
+              assertEquals(1, dbActions.updateEmployee(employee, newEmp))
+              println("Test Succeed")
+          } catch (e:Exception){
+              fail("Test failed due to: ${e.message}")
+          }
+        }
+    }
 
     @Test
     fun ShouldGetAnEmployeeDataFromDataBaseAndReturnObject() {
@@ -255,11 +268,11 @@ class DataBaseActionsTest {
         }
     }
 
-    //TODO("Must be tested later")
     @Test
     fun ShouldDeleteAnEmployeeDataAndReturnTheNumberOfAffectedRows() {
         runBlocking {
           try {
+              println("Trying to delete Employee data...")
               val employee: Employee = Employee(name ="TestBot", sex = "Female", wage = 1357.51, bornDate = "1996-04-04", address = "11715550", idDept = 1)
               assertEquals(1, dbActions.deleteEmployee(employee))
               println("Test Succeed!")
@@ -288,7 +301,19 @@ class DataBaseActionsTest {
         }
     }
 
-    //TODO("Update method")
+    @Test
+    fun ShouldUpdateProjectAndReturnTheNumberOfAffectedRows() {
+        runBlocking {
+            try {
+                println("Trying to update Project data...")
+                val project: Project = dbActions.getProject("Test Project")!!
+                assertEquals(1, dbActions.updateProject(project, Project("Updated test", 1)))
+                println("Test Succeed")
+            }catch (e: Exception) {
+                fail("Test failed due to: ${e.message}")
+            }
+        }
+    }
 
     @Test
     fun ShouldGetAProjectDataFromDataBaseAndReturnObject() {
@@ -327,12 +352,11 @@ class DataBaseActionsTest {
         }
     }
 
-    //TODO("Must be tested later")
     @Test
     fun ShouldDeleteAProjectRegisterAndReturnTheNumberOfAffectedRows() {
         runBlocking {
             try{
-                val project: Project = Project("Test Project", 1)
+                val project: Project = Project("Updated Test", 1)
                 println("Trying to delete a Project register from database...")
                 assertEquals(1, dbActions.deleteProject(project))
                 println("Test Succeed!")
@@ -361,7 +385,21 @@ class DataBaseActionsTest {
         }
     }
 
-    //TODO("Update Method")
+    @Test
+    fun ShouldUpdateContractAndReturnTheNumberOfAffectedRows() {
+        runBlocking {
+            try {
+                println("Trying to update Contract data...")
+                val storedContract: ProjectEmployeeContract = dbActions.getProjectContract("Test Project")!!
+                val newContract = storedContract
+                newContract.description = "Test updated description"
+                assertEquals(1, dbActions.updateProjectContract(storedContract, newContract))
+                println("Test Succeed")
+            } catch (e: Exception) {
+                fail("Test failed due to: ${e.message}")
+            }
+        }
+    }
 
     @Test
     fun ShouldGetContractEmployee_ProjectWhenPassingProjectNameAsArgument(){
@@ -403,7 +441,6 @@ class DataBaseActionsTest {
         }
     }
 
-    //TODO("Must be tested later")
     @Test
     fun ShouldDeleteContractEmployee_ProjectDataAndReturnNumberOfAffectedRows(){
         runBlocking {

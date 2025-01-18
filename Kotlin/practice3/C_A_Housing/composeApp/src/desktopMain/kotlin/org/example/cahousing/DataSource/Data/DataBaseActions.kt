@@ -687,24 +687,28 @@ class DataBaseActions {
             try {
                 val query: PreparedStatement =
                     db.prepareStatement("DELETE FROM Project WHERE STR_name='${project.name}';")
+
                 val task: Deferred<Int> = async {
                     val subQuery1: PreparedStatement =
                         db.prepareStatement("SELECT * FROM Project WHERE STR_name='${project.name}';")
                     val res1: ResultSet = subQuery1.executeQuery()
                     res1.next()
 
-                    val subQuery2: PreparedStatement = db.prepareStatement(
-                        "SELECT * FROM Employee_Project WHERE STR_project='${
-                            res1.getString(getProject(project.name)?.name)
-                        }';"
-                    )
-                    val res2: ResultSet = subQuery2.executeQuery()
-                    res2.next()
+                    val subQuery2: PreparedStatement? = try {
+                        db.prepareStatement("SELECT * FROM Employee_Project WHERE STR_project='${res1.getString(getProject(project.name)?.name)}';")
+                    } catch (e: SQLException){
+                        println("Data not found: ${e.message}")
+                        null
+                    }
 
-                    if (res2.row == 0) {
+                    val res2: ResultSet? = subQuery2?.executeQuery()
+                    res2?.next()
+
+                    if (res2?.row == 0 || res2 == null) {
+                        println("There is no data bonded to this ${project.name}")
                         0
                     } else {
-                        val contract = ProjectEmployeeContract(res2.getInt("id_contract"), getProject(res2.getString(project.name))!!, getEmployee(res2.getString("STR_employee"))!!)
+                        val contract: ProjectEmployeeContract = ProjectEmployeeContract(res2.getInt("id_contract"), getProject(res2.getString(project.name))!!, getEmployee(res2.getString("STR_employee"))!!)
                         deleteProjectContract(contract)
                     }
                 }
