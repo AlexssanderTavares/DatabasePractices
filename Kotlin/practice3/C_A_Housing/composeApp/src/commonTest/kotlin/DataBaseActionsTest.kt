@@ -22,7 +22,7 @@ class DataBaseActionsTest {
     private val formatter: PostalCodeFormatter = PostalCodeFormatter()
 
     // DEPT CONTEXT
-    
+
     @Test
     fun ShouldCreateANewDeptAndReturnTheNumberOfAffectedRows() {
         runBlocking {

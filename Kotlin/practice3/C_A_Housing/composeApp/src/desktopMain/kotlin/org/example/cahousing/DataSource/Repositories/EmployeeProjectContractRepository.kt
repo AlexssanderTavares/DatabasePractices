@@ -19,7 +19,7 @@ class EmployeeProjectContractRepository : Repository<ProjectEmployeeContract> {
     }
 
     override suspend fun update(model: ProjectEmployeeContract, data: ProjectEmployeeContract): Int {
-        TODO("Not yet implemented")
+        return db.updateProjectContract(model, data)
     }
 
     override suspend fun getAll() : ArrayList<ProjectEmployeeContract> {

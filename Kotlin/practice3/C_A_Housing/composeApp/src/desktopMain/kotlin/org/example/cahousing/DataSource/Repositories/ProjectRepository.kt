@@ -20,7 +20,6 @@ class ProjectRepository : Repository<Project> {
 
     override suspend fun update(model: Project, data: Project): Int {
         return db.updateProject(model, data)
-        //TODO("Must update method definition")
     }
 
     override suspend fun getAll() : ArrayList<Project> {
