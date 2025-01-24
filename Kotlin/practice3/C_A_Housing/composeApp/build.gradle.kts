@@ -1,3 +1,4 @@
+import org.gradle.internal.impldep.com.jcraft.jsch.ConfigRepository.defaultConfig
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -26,6 +27,9 @@ kotlin {
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core: 2.0.0")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android: 1.3.9")
             implementation("org.jetbrains.compose.ui:ui-tooling-preview: 1.4.1")
+            implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+            implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+            implementation("androidx.lifecycle:lifecycle-runtime-compose: 2.7.0")
         }
 
         commonTest.dependencies {
@@ -51,3 +55,4 @@ compose.desktop {
         }
     }
 }
+

@@ -13,8 +13,8 @@ class AddressRepository : Repository<Address> {
         return db.createAddress(model)
     }
 
-    override suspend fun get(cep: String): Address? {
-        return db.getAddress(cep)
+    override suspend fun get(varchar: String): Address? {
+        return db.getAddress(varchar)
     }
 
     override suspend fun update(model: Address, data: Address): Int {

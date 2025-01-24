@@ -103,8 +103,13 @@ class DataBaseActions {
                     if(oldData.description != data.description){
                         val query: PreparedStatement = db.prepareStatement("UPDATE Dept SET STR_description='${data.description}' WHERE STR_name='${oldData.name}';")
                         query.execute()
+                        rows++
                     }
-                    rows++
+                    if(oldData.name != data.name){
+                        val query: PreparedStatement = db.prepareStatement("UPDATE Dept SET STR_name='${data.name}' WHERE STR_name='${oldData.name}';")
+                        query.execute()
+                        rows++
+                    }
                     println("Query Ok! Number of Affected rows: ${rows}")
                 }else{
                     throw SQLException("Data doesn't match. ${dept} and ${data} is not the same.")
