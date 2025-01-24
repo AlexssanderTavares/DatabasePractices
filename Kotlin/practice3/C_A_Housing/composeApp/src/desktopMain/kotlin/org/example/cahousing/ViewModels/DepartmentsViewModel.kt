@@ -9,20 +9,26 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.cahousing.DataSource.Models.Dept
 import org.example.cahousing.DataSource.Models.Models
 import org.example.cahousing.DataSource.Repositories.DeptRepository
 import org.example.cahousing.DataSource.Repositories.Repository
+import org.example.cahousing.ViewModels.UIStates.DepartmentsViewUIState
 
-class DepartmentsViewModel {
+class DepartmentsViewModel : ViewModel(){
 
     init {
         println("DepartmentsViewModel class loaded!")
     }
 
-
     private lateinit var repo: Repository<Dept>
+
+    private val _uiState: MutableStateFlow<DepartmentsViewUIState> = MutableStateFlow(
+        DepartmentsViewUIState()
+    )
+    val uiState: StateFlow<DepartmentsViewUIState> = _uiState.asStateFlow()
 
     private val _creationResult: MutableStateFlow<Int?> = MutableStateFlow(null)
     val creationResult: StateFlow<Int?> = _creationResult.asStateFlow()
@@ -109,6 +115,16 @@ class DepartmentsViewModel {
                 }
                 delay(5000)
             }
+        }
+    }
+
+    fun changeVisibility(visibility: Boolean){
+        _uiState.update { currentState ->
+            currentState.copy(
+                onVisibilityChange = {
+                    _uiState.value = currentState.copy(visibility = visibility)
+                }
+            )
         }
     }
 

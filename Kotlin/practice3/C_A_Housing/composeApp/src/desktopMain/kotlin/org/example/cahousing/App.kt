@@ -4,10 +4,13 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,14 +25,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
@@ -41,6 +47,7 @@ import androidx.compose.ui.text.TextLayoutInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.resources.painterResource
 import c_a_housing.composeapp.generated.resources.Res
 import c_a_housing.composeapp.generated.resources.deleteicon
@@ -65,7 +72,7 @@ fun App() {
             Column(
 
             ) {
-                DisplayDepartments(true)
+                DepartmentsView(true)
             }
         }
 
@@ -78,7 +85,10 @@ fun App() {
 @Composable
 fun SideMenu() {
     var visibility: Boolean by remember { mutableStateOf(false) }
-    var displayDepartment by remember { mutableStateOf(false) }
+    //var displayDepartment by remember { mutableStateOf(false) }
+    val deptViewModel: DepartmentsViewModel = viewModel()
+    val deptUiState: Boolean = deptViewModel.uiState.value.visibility
+
     Column(
         modifier = Modifier.width(300.dp),
         verticalArrangement = Arrangement.SpaceBetween,
@@ -124,7 +134,7 @@ fun SideMenu() {
                         enabled = lockDepartmentBtn,
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
-                            displayDepartment = true
+                            displayDepartment = deptUiState
                             lockDepartmentBtn = false
                             lockProjectsBtn = true
                             lockEmployeeBtn = true
@@ -189,24 +199,21 @@ fun SideMenu() {
                     }
                 }
             }
-            DisplayDepartments(displayDepartment)
+            DepartmentsView(displayDepartment)
         }
     }
 }
 
 
 @Composable
-fun DisplayDepartments(visibility: Boolean, modifier: Modifier = Modifier){
-    var visible: Boolean by remember { mutableStateOf(false) }
-
-    val viewModel = DepartmentsViewModel().apply { this.getAll() }
-
+fun DepartmentsView(visibility: Boolean, modifier: Modifier = Modifier){
+    val viewModel: DepartmentsViewModel = viewModel()
+    val uiState = viewModel.uiState.collectAsState()
     val deptList: ArrayList<Dept>? by viewModel.getAllResult.collectAsState()
 
     if(visibility && deptList != null){
-        visible = true
         AnimatedVisibility(
-            visible = visible,
+            visible = uiState.value.visibility,
             ){
             Column(
                 modifier = Modifier.fillMaxWidth().fillMaxHeight().background(Color.Blue),
@@ -228,14 +235,13 @@ fun DisplayDepartments(visibility: Boolean, modifier: Modifier = Modifier){
                 }
             }
         }
-
     }
 }
 
 @Composable
 fun DeptItem(dept: Dept) {
     Row(
-        modifier = Modifier.border(4.dp, Color.Black, shape = RoundedCornerShape(8.dp)).padding(4.dp).background(Color.White).fillMaxSize().height(56.dp),
+        modifier = Modifier.border(4.dp, Color.Black, shape = RoundedCornerShape(8.dp)).padding(4.dp).background(Color.White).fillMaxSize().height(56.dp).clickable(onClick = {}),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -270,7 +276,6 @@ fun DeptItem(dept: Dept) {
 @Composable
 fun DeleteUpdateButtons(dept: Dept){
     val viewModel = DepartmentsViewModel()
-    var showErrorDialog: Boolean by remember { mutableStateOf(false) }
     var showUpdateForm: Boolean by remember { mutableStateOf(false) }
 
     Row(
@@ -289,17 +294,13 @@ fun DeleteUpdateButtons(dept: Dept){
         FloatingActionButton(
             modifier = Modifier.width(48.dp).height(48.dp).padding(8.dp),
             onClick = {
-                showUpdateForm = true
+                if(!showUpdateForm) {
+                    showUpdateForm = true
+                    println("Opening Update Form...$showUpdateForm")
+                }
             }
         ){
             Icon(painter = painterResource(Res.drawable.updateicon), contentDescription = "")
-        }
-    }
-    if(showErrorDialog){
-        AnimatedVisibility(
-            visible = showErrorDialog
-        ) {
-            ErrorDialog(showErrorDialog)
         }
     }
 
@@ -307,6 +308,7 @@ fun DeleteUpdateButtons(dept: Dept){
         AnimatedVisibility(
             visible = showUpdateForm
         ) {
+
             UpdateForm(showUpdateForm, dept)
         }
     }
@@ -331,7 +333,7 @@ fun UpdateForm(visibility: Boolean, dept: Dept) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TextField(
+                OutlinedTextField(
                     value = newDeptName,
                     onValueChange = { newDeptName = it },
                     label = { Text(text = "New Department Name: ") }
@@ -339,8 +341,8 @@ fun UpdateForm(visibility: Boolean, dept: Dept) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                TextField(
-                    value = newDeptName,
+                OutlinedTextField(
+                    value = newDeptDescription,
                     onValueChange = { newDeptDescription = it },
                     label = { Text(text = "New Department Description: ") }
                 )
@@ -380,7 +382,7 @@ fun UpdateForm(visibility: Boolean, dept: Dept) {
             AnimatedVisibility(
                 visible = displayErrorDialog
             ) {
-                ErrorDialog(displayErrorDialog)
+                ErrorDialog("Update Error", "Unable to update data due to an error.", displayErrorDialog)
             }
         }
 
@@ -388,13 +390,13 @@ fun UpdateForm(visibility: Boolean, dept: Dept) {
 }
 
 @Composable
-fun ErrorDialog(visible: Boolean) {
+fun ErrorDialog(title: String, errorMessage: String, visible: Boolean) {
     var display: Boolean by remember { mutableStateOf(visible) }
     AnimatedVisibility(visible = display) {
         AlertDialog(
             onDismissRequest = { display = false },
-            title = { Text(text = "Update error!") },
-            text = { Text(text = "You must pass an updated object to update a department.") },
+            title = { Text(text = title) },
+            text = { Text(text = errorMessage) },
             confirmButton = {
                 Button(onClick = { display = false }) {
                     Text(text = "OK")

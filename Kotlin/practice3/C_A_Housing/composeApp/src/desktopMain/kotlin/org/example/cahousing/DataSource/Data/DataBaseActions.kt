@@ -99,7 +99,7 @@ class DataBaseActions {
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 val oldData: Dept? = getDept(dept.name)
-                if(oldData != null && data.name == oldData.name){
+                if(oldData != null){
                     if(oldData.description != data.description){
                         val query: PreparedStatement = db.prepareStatement("UPDATE Dept SET STR_description='${data.description}' WHERE STR_name='${oldData.name}';")
                         query.execute()
