@@ -1,11 +1,13 @@
 package org.example.cahousing
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -52,187 +54,157 @@ import org.jetbrains.compose.resources.painterResource
 import c_a_housing.composeapp.generated.resources.Res
 import c_a_housing.composeapp.generated.resources.deleteicon
 import c_a_housing.composeapp.generated.resources.updateicon
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.collect
 import org.example.cahousing.DataSource.Models.Dept
+import org.example.cahousing.ViewModels.AppViewModel
 import org.example.cahousing.ViewModels.DepartmentsViewModel
 
 @Composable
 @Preview
 fun App() {
-        Row(
-            modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-            horizontalArrangement = Arrangement.SpaceBetween
-
-        ) {
-            Column(
-
-            ) {
-                SideMenu()
-            }
-
-            Column(
-
-            ) {
-                DepartmentsView(true)
-            }
-        }
-
-
-
-
-}
-
-
-@Composable
-fun SideMenu() {
-    var visibility: Boolean by remember { mutableStateOf(false) }
-    //var displayDepartment by remember { mutableStateOf(false) }
-    val deptViewModel: DepartmentsViewModel = viewModel()
-    val deptUiState: Boolean = deptViewModel.uiState.value.visibility
-
-    Column(
-        modifier = Modifier.width(300.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.CenterHorizontally
+    var displayDepartments: Boolean by remember { mutableStateOf(false) }
+    Row(
+        modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        var buttonText: String by remember { mutableStateOf("Show Menu") }
-        if(visibility) { buttonText = "Hide Menu" } else { buttonText = "Display Menu" }
-
-        Button(
-            modifier = Modifier.background(Color.Red).fillMaxWidth(),
-            onClick = {
-                if (!visibility) {
-                    println("Changing Side Menu button state: ${visibility}")
-                    visibility = true
-                } else {
-                    println("Changing Side Menu button state: ${visibility}")
-                    visibility = false
-                }
+        Column(
+            modifier = Modifier.width(300.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            var buttonText: String by remember { mutableStateOf("Show Menu") }
+            var enableSideMenu: Boolean by remember { mutableStateOf(false) }
+            if (enableSideMenu) {
+                buttonText = "Hide Menu"
+            } else {
+                buttonText = "Display Menu"
             }
-        ) {
-            Text(text = buttonText)
-        }
-        AnimatedVisibility(
-            visible = visibility,
-            enter = fadeIn() + expandHorizontally(),
-            exit = fadeOut() + shrinkHorizontally()
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth().fillMaxHeight().background(Color.Red),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+
+            Button(
+                modifier = Modifier.background(Color.Red).fillMaxWidth(),
+                onClick = {
+                    if (enableSideMenu) {
+                        println("Changing Side Menu button state: ${enableSideMenu}")
+                        enableSideMenu = false
+                    } else {
+                        println("Changing Side Menu button state: ${enableSideMenu}")
+                        enableSideMenu = true
+                    }
+                }
             ) {
+                Text(text = buttonText)
+            }
+            AnimatedVisibility(
+                visible = enableSideMenu,
+                enter = fadeIn() + expandHorizontally(),
+                exit = fadeOut() + shrinkHorizontally()
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().fillMaxHeight().background(Color.Red),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
 
-                MaterialTheme {
-                    //enable button interactions
-                    var lockDepartmentBtn by remember { mutableStateOf(true) }
-                    var lockProjectsBtn by remember { mutableStateOf(true) }
-                    var lockEmployeeBtn by remember { mutableStateOf(true) }
-                    var lockContractsBtn by remember { mutableStateOf(true) }
+                    MaterialTheme {
 
 
-                    Button(
-                        enabled = lockDepartmentBtn,
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            displayDepartment = deptUiState
-                            lockDepartmentBtn = false
-                            lockProjectsBtn = true
-                            lockEmployeeBtn = true
-                            lockContractsBtn = true
+                        Button(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                if(displayDepartments){
+                                    displayDepartments = false
+                                } else{
+                                    displayDepartments = true
+                                }
+                            }
+                        ) {
+                            Text(text = "Departments")
                         }
-                    ) {
-                        Text(text = "Departments")
-                    }
 
-                    Spacer(Modifier.width(18.dp))
+                        Spacer(Modifier.width(18.dp))
 
-                    Button(
-                        enabled = lockProjectsBtn,
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            lockDepartmentBtn = true
-                            lockProjectsBtn = false
-                            lockEmployeeBtn = true
-                            lockContractsBtn = true
+                        Button(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+
+                            }
+                        ) {
+                            Text(text = "Projects")
                         }
-                    ) {
-                        Text(text = "Projects")
-                    }
 
-                    Spacer(Modifier.width(18.dp))
+                        Spacer(Modifier.width(18.dp))
 
-                    Button(
-                        enabled = lockEmployeeBtn,
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            lockDepartmentBtn = true
-                            lockProjectsBtn = true
-                            lockEmployeeBtn = false
-                            lockContractsBtn = true
+                        Button(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+
+                            }
+                        ) {
+                            Text(text = "Employees")
                         }
-                    ) {
-                        Text(text = "Employees")
-                    }
 
-                    Spacer(Modifier.width(18.dp))
+                        Spacer(Modifier.width(18.dp))
 
-                    Button(
-                        enabled = lockContractsBtn,
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            lockDepartmentBtn = true
-                            lockProjectsBtn = true
-                            lockEmployeeBtn = true
-                            lockContractsBtn = false
+                        Button(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+
+                            }
+                        ) {
+                            Text(text = "Contracts")
                         }
-                    ) {
-                        Text(text = "Contracts")
-                    }
 
-                    Spacer(Modifier.width(18.dp))
+                        Spacer(Modifier.width(18.dp))
 
-                    Button(
-                        modifier = Modifier,
-                        onClick = {}
-                    ) {
-                        Text(text = "Logout")
+                        Button(
+                            modifier = Modifier,
+                            onClick = {}
+                        ) {
+                            Text(text = "Logout")
+                        }
                     }
                 }
             }
-            DepartmentsView(displayDepartment)
+        }
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AnimatedVisibility(
+                visible = displayDepartments,
+                exit = fadeOut() + shrinkHorizontally()
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    DepartmentsView(displayDepartments)
+                }
+            }
         }
     }
 }
 
-
 @Composable
-fun DepartmentsView(visibility: Boolean, modifier: Modifier = Modifier){
-    val viewModel: DepartmentsViewModel = viewModel()
-    val uiState = viewModel.uiState.collectAsState()
-    val deptList: ArrayList<Dept>? by viewModel.getAllResult.collectAsState()
+fun DepartmentsView(visible: Boolean) {
+    val deptViewModel: DepartmentsViewModel = viewModel()
+    deptViewModel.getDeptList()
+    val updatedList: ArrayList<Dept> by deptViewModel.deptList.collectAsState()
 
-    if(visibility && deptList != null){
-        AnimatedVisibility(
-            visible = uiState.value.visibility,
-            ){
-            Column(
-                modifier = Modifier.fillMaxWidth().fillMaxHeight().background(Color.Blue),
+    AnimatedVisibility(
+        visible = visible
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().fillMaxHeight().background(Color.Blue),
+            verticalArrangement = Arrangement.Center,
+        ) {
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.Center,
-
-            ){
-                val listSize: Int by remember { mutableStateOf(deptList!!.size) }
-                val list: List<Dept> by remember { mutableStateOf(deptList!!) }
-                
-                LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    items(items = list, itemContent = {
-                        Spacer(modifier.height(8.dp))
-                        DeptItem(dept = it)
-                    })
-                }
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                items(items = updatedList, itemContent = {
+                    Spacer(Modifier.height(8.dp))
+                    DeptItem(dept = it)
+                })
             }
         }
     }
@@ -241,7 +213,9 @@ fun DepartmentsView(visibility: Boolean, modifier: Modifier = Modifier){
 @Composable
 fun DeptItem(dept: Dept) {
     Row(
-        modifier = Modifier.border(4.dp, Color.Black, shape = RoundedCornerShape(8.dp)).padding(4.dp).background(Color.White).fillMaxSize().height(56.dp).clickable(onClick = {}),
+        modifier = Modifier.border(4.dp, Color.Black, shape = RoundedCornerShape(8.dp))
+            .padding(4.dp).background(Color.White).fillMaxSize().height(56.dp)
+            .clickable(onClick = {}),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -250,18 +224,20 @@ fun DeptItem(dept: Dept) {
             text = "Department: ${dept.name}",
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
-            )
+        )
 
         Spacer(modifier = Modifier.width(18.dp))
 
-        Text(text = "Number: ${dept.id}",
+        Text(
+            text = "Number: ${dept.id}",
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )
 
         Spacer(modifier = Modifier.width(18.dp))
 
-        Text(text = "Description: ${dept.description}",
+        Text(
+            text = "Description: ${dept.description}",
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )
@@ -270,9 +246,9 @@ fun DeptItem(dept: Dept) {
 
 
     }
-    DeleteUpdateButtons(dept)
+    //DeleteUpdateButtons(dept)
 }
-
+/*
 @Composable
 fun DeleteUpdateButtons(dept: Dept){
     val viewModel = DepartmentsViewModel()
@@ -312,7 +288,8 @@ fun DeleteUpdateButtons(dept: Dept){
             UpdateForm(showUpdateForm, dept)
         }
     }
-}
+}*/
+/*
 
 @Composable
 fun UpdateForm(visibility: Boolean, dept: Dept) {
@@ -388,6 +365,7 @@ fun UpdateForm(visibility: Boolean, dept: Dept) {
 
     }
 }
+*/
 
 @Composable
 fun ErrorDialog(title: String, errorMessage: String, visible: Boolean) {
