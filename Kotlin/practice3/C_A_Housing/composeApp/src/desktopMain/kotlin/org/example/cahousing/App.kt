@@ -40,6 +40,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,16 +50,23 @@ import androidx.compose.ui.text.TextLayoutInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Notification
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.resources.painterResource
 import c_a_housing.composeapp.generated.resources.Res
 import c_a_housing.composeapp.generated.resources.deleteicon
 import c_a_housing.composeapp.generated.resources.updateicon
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import org.example.cahousing.DataSource.Models.Dept
 import org.example.cahousing.ViewModels.AppViewModel
 import org.example.cahousing.ViewModels.DepartmentsViewModel
+import java.sql.SQLException
 
 @Composable
 @Preview
@@ -186,36 +194,154 @@ fun App() {
 @Composable
 fun DepartmentsView(visible: Boolean) {
     val deptViewModel: DepartmentsViewModel = viewModel()
-    deptViewModel.getDeptList()
     val updatedList: ArrayList<Dept> by deptViewModel.deptList.collectAsState()
+    var dept: Dept? by remember { mutableStateOf(null)}
+    var newDeptName: String by remember { mutableStateOf("") }
+    var newDeptDescription: String by remember { mutableStateOf("") }
+    var displayCreationErrorDialog: Boolean by remember { mutableStateOf(false) }
+    var creationErrorMessage: String by remember { mutableStateOf("") }
+
+    deptViewModel.getDeptList()
+
+    CoroutineScope(Dispatchers.IO).launch {
+        while(true){
+            deptViewModel.getDeptList()
+            delay(5000)
+        }
+    }
 
     AnimatedVisibility(
         visible = visible
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().fillMaxHeight().background(Color.Blue),
-            verticalArrangement = Arrangement.Center,
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Column(
+                modifier = Modifier.padding(start = 24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier.width(400.dp),
+                    value = newDeptName,
+                    onValueChange = { newDeptName = it },
+                    label = { Text(text = "New Department Name: ") }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    modifier = Modifier.width(400.dp).height(250.dp),
+                    value = newDeptDescription,
+                    onValueChange = { newDeptDescription = it },
+                    label = { Text(text = "New Department Description: ") }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        modifier = Modifier.padding(8.dp),
+                        onClick = {
+                            try{
+                                if(deptViewModel.getResult.value != null){
+                                    dept = Dept(name = newDeptName, description = newDeptDescription)
+                                    deptViewModel.create(dept!!)
+                                }
+                            } catch (e: SQLException) {
+                                displayCreationErrorDialog = true
+                                creationErrorMessage = e.message!!
+                            }
+                        }
+                    ) {
+                        Text(text = "Create")
+                    }
+                    Button(
+                        modifier = Modifier.padding(8.dp),
+                        onClick = {
+
+                        }
+                    ) {
+                        Text(text = "Update")
+                    }
+
+                    Button(
+                        modifier = Modifier.padding(8.dp),
+                        onClick = {
+
+                        }
+                    ) {
+                        Text(text = "Delete")
+                    }
+                }
+            }
+
             LazyColumn(
+                modifier = Modifier.padding(8.dp).fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 items(items = updatedList, itemContent = {
                     Spacer(Modifier.height(8.dp))
-                    DeptItem(dept = it)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ){
+                        DeptItem(
+                            modifier = Modifier.border(4.dp, Color.Black, shape = RoundedCornerShape(8.dp))
+                                .padding(4.dp).background(Color.White).height(56.dp).width(900.dp).clickable {
+                                    newDeptName = it.name
+                                    newDeptDescription = it.description
+                                },
+                            dept = it)
+
+                        FloatingActionButton(
+                            backgroundColor = Color.White,
+                            modifier = Modifier.width(56.dp).height(56.dp).padding(8.dp),
+                            onClick = {
+                                //deptViewModel.delete(dept)
+                            }
+                        ){
+                            Icon(
+                                modifier = Modifier.padding(8.dp).background(Color.White),
+                                painter = painterResource(Res.drawable.deleteicon),
+                                contentDescription = "")
+                        }
+
+                        FloatingActionButton(
+                            backgroundColor = Color.White,
+                            modifier = Modifier.width(56.dp).height(56.dp).padding(8.dp),
+                            onClick = {
+
+                            }
+                        ){
+                            Icon(
+                                modifier = Modifier.padding(8.dp).background(Color.White),
+                                painter = painterResource(Res.drawable.updateicon),
+                                contentDescription = "")
+                        }
+                    }
                 })
             }
         }
     }
+
+    if(displayCreationErrorDialog){
+        ErrorDialog("Creation Error", creationErrorMessage, displayCreationErrorDialog)
+    }
 }
 
 @Composable
-fun DeptItem(dept: Dept) {
+fun DeptItem(dept: Dept, modifier: Modifier){
     Row(
-        modifier = Modifier.border(4.dp, Color.Black, shape = RoundedCornerShape(8.dp))
-            .padding(4.dp).background(Color.White).fillMaxSize().height(56.dp)
-            .clickable(onClick = {}),
+        modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {

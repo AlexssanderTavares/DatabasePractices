@@ -39,6 +39,14 @@ class DataBaseActions {
     suspend fun createDept(dept: Dept): Int {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
+
+            getAllDept().forEach {
+                if(it.name == dept.name){
+                    throw SQLException("Every Department name has an unique name. Can't create another department with that name.")
+                }
+            }
+
+
             try {
                 val query: PreparedStatement =
                     db.prepareStatement("INSERT INTO Dept (STR_name, STR_description) VALUES ('${dept.name}','${dept.description}');")
@@ -61,7 +69,7 @@ class DataBaseActions {
     }
 
     suspend fun getDept(deptName: String): Dept? {
-        lateinit var data: Dept
+        var data: Dept? = null
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 val query: PreparedStatement =

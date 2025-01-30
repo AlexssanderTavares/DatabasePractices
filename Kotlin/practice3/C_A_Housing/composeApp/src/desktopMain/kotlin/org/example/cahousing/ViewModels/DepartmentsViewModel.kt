@@ -18,24 +18,50 @@ import org.example.cahousing.DataSource.Repositories.DeptRepository
 import org.example.cahousing.DataSource.Repositories.Repository
 import org.example.cahousing.ViewModels.UIStates.DepartmentsViewUIState
 
-class DepartmentsViewModel : ViewModel(){
+class DepartmentsViewModel : ViewModel() {
 
     private lateinit var repo: Repository<Dept>
 
+    // List mutable state
     private val _deptList: MutableStateFlow<ArrayList<Dept>> = MutableStateFlow(arrayListOf())
     val deptList: StateFlow<ArrayList<Dept>> = _deptList.asStateFlow()
+
+    // Mutable return value of new dept creation
+    private val _creationResult: MutableStateFlow<Int> = MutableStateFlow(0)
+    val creationResult: StateFlow<Int> = _creationResult.asStateFlow()
+
+    // Get and Set dept caught by get method
+    private val _getResult: MutableStateFlow<Dept?> = MutableStateFlow(null)
+    val getResult: StateFlow<Dept?> = _getResult.asStateFlow()
+
+    fun create(dept: Dept) {
+        repo = DeptRepository()
+        viewModelScope.launch(Dispatchers.IO) {
+            println("Creating ${dept.name}")
+            _creationResult.value = repo.create(dept)
+            println("Creation Successful!")
+            println("Process result: ${creationResult.value}")
+        }
+    }
+
+    fun getDept(name: String) {
+        repo = DeptRepository()
+        viewModelScope.launch(Dispatchers.IO) {
+            println("Trying to get department with that name...")
+            _getResult.value = repo.get(name)
+            println("Success getting Department!!!")
+            println("Department found: ${getResult.value}")
+        }
+    }
 
     fun getDeptList() {
         repo = DeptRepository()
         viewModelScope.launch(Dispatchers.IO) {
-            while (true) {
-                println("Getting Departments list")
-                _deptList.value = repo.getAll()
-                println("Departments List:")
-                deptList.value.forEach{
-                    println("Department: ${it.name}")
-                }
-                delay(5000)
+            println("Getting Departments list")
+            _deptList.value = repo.getAll()
+            println("Departments List:")
+            deptList.value.forEach {
+                println("Department: ${it.name}")
             }
         }
     }
