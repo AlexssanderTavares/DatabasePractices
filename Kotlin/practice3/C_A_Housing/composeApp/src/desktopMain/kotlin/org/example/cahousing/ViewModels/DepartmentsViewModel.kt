@@ -34,6 +34,10 @@ class DepartmentsViewModel : ViewModel() {
     private val _getResult: MutableStateFlow<Dept?> = MutableStateFlow(null)
     val getResult: StateFlow<Dept?> = _getResult.asStateFlow()
 
+    // Update method must be called from UI and change updateResult value
+    private val _updateResult: MutableStateFlow<Int> = MutableStateFlow(0)
+    val updateResult: StateFlow<Int> = _updateResult.asStateFlow()
+
     fun create(dept: Dept) {
         repo = DeptRepository()
         viewModelScope.launch(Dispatchers.IO) {
@@ -66,5 +70,21 @@ class DepartmentsViewModel : ViewModel() {
         }
     }
 
+    fun update(dept: Dept, data: Dept) {
+        repo = DeptRepository()
+        viewModelScope.launch(Dispatchers.IO) {
+            println("Updating ${dept.name}...")
+            if(dept.name != data.name) {
+                println("${dept.name} to ${data.name}")
+            }
+            if(dept.description != data.description){
+                println("${dept.description} to ${data.description}")
+            }
+            _updateResult.value = repo.update(dept, data)
+            if(updateResult.value > 0){
+                println("Number of updates: ${updateResult.value}")
+            }
+        }
+    }
 
 }

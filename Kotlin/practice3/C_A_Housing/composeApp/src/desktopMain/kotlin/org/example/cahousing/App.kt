@@ -58,6 +58,7 @@ import c_a_housing.composeapp.generated.resources.deleteicon
 import c_a_housing.composeapp.generated.resources.updateicon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asFlow
@@ -90,7 +91,7 @@ fun App() {
             }
 
             Button(
-                modifier = Modifier.background(Color.Red).fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 onClick = {
                     if (enableSideMenu) {
                         println("Changing Side Menu button state: ${enableSideMenu}")
@@ -109,13 +110,12 @@ fun App() {
                 exit = fadeOut() + shrinkHorizontally()
             ) {
                 Column(
-                    modifier = Modifier.fillMaxWidth().fillMaxHeight().background(Color.Red),
+                    modifier = Modifier.fillMaxWidth().fillMaxHeight(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
                     MaterialTheme {
-
 
                         Button(
                             modifier = Modifier.fillMaxWidth(),
@@ -200,15 +200,17 @@ fun DepartmentsView(visible: Boolean) {
     var newDeptDescription: String by remember { mutableStateOf("") }
     var displayCreationErrorDialog: Boolean by remember { mutableStateOf(false) }
     var creationErrorMessage: String by remember { mutableStateOf("") }
+    var updateErrorMessage: String by remember { mutableStateOf("") }
 
     deptViewModel.getDeptList()
 
     CoroutineScope(Dispatchers.IO).launch {
-        while(true){
+        while (true){
             deptViewModel.getDeptList()
             delay(5000)
         }
     }
+
 
     AnimatedVisibility(
         visible = visible
@@ -219,7 +221,7 @@ fun DepartmentsView(visible: Boolean) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
-                modifier = Modifier.padding(start = 24.dp),
+                modifier = Modifier.padding(start = 64.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -249,10 +251,12 @@ fun DepartmentsView(visible: Boolean) {
                         modifier = Modifier.padding(8.dp),
                         onClick = {
                             try{
-                                if(deptViewModel.getResult.value != null){
-                                    dept = Dept(name = newDeptName, description = newDeptDescription)
+                                dept = Dept(name = newDeptName, description = newDeptDescription)
+                                deptViewModel.getDept(dept!!.name)
+                                if(deptViewModel.getResult.value == null){
                                     deptViewModel.create(dept!!)
                                 }
+
                             } catch (e: SQLException) {
                                 displayCreationErrorDialog = true
                                 creationErrorMessage = e.message!!
@@ -264,6 +268,16 @@ fun DepartmentsView(visible: Boolean) {
                     Button(
                         modifier = Modifier.padding(8.dp),
                         onClick = {
+                            try{
+                                dept = Dept(name = newDeptName, description = newDeptDescription)
+                                if(dept?.name != deptViewModel.getResult.value?.name || dept?.description != deptViewModel.getResult.value?.description ){
+                                    deptViewModel.update(deptViewModel.getResult.value!!, dept!!)
+                                    deptViewModel.getDeptList()
+                                }
+                            }catch (e: SQLException){
+
+                                updateErrorMessage = e.message!!
+                            }
 
                         }
                     ) {
@@ -296,37 +310,13 @@ fun DepartmentsView(visible: Boolean) {
                     ){
                         DeptItem(
                             modifier = Modifier.border(4.dp, Color.Black, shape = RoundedCornerShape(8.dp))
-                                .padding(4.dp).background(Color.White).height(56.dp).width(900.dp).clickable {
+                                .padding(4.dp).background(Color.White).height(56.dp).fillMaxWidth().clickable {
                                     newDeptName = it.name
                                     newDeptDescription = it.description
+                                    deptViewModel.getDept(it.name)
                                 },
-                            dept = it)
-
-                        FloatingActionButton(
-                            backgroundColor = Color.White,
-                            modifier = Modifier.width(56.dp).height(56.dp).padding(8.dp),
-                            onClick = {
-                                //deptViewModel.delete(dept)
-                            }
-                        ){
-                            Icon(
-                                modifier = Modifier.padding(8.dp).background(Color.White),
-                                painter = painterResource(Res.drawable.deleteicon),
-                                contentDescription = "")
-                        }
-
-                        FloatingActionButton(
-                            backgroundColor = Color.White,
-                            modifier = Modifier.width(56.dp).height(56.dp).padding(8.dp),
-                            onClick = {
-
-                            }
-                        ){
-                            Icon(
-                                modifier = Modifier.padding(8.dp).background(Color.White),
-                                painter = painterResource(Res.drawable.updateicon),
-                                contentDescription = "")
-                        }
+                            dept = it
+                        )
                     }
                 })
             }
@@ -372,126 +362,8 @@ fun DeptItem(dept: Dept, modifier: Modifier){
 
 
     }
-    //DeleteUpdateButtons(dept)
 }
-/*
-@Composable
-fun DeleteUpdateButtons(dept: Dept){
-    val viewModel = DepartmentsViewModel()
-    var showUpdateForm: Boolean by remember { mutableStateOf(false) }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ){
-        FloatingActionButton(
-            modifier = Modifier.width(48.dp).height(48.dp).padding(8.dp),
-            onClick = {
-                viewModel.delete(dept)
-            }
-        ){
-            Icon(painter = painterResource(Res.drawable.deleteicon), contentDescription = "")
-        }
-
-        FloatingActionButton(
-            modifier = Modifier.width(48.dp).height(48.dp).padding(8.dp),
-            onClick = {
-                if(!showUpdateForm) {
-                    showUpdateForm = true
-                    println("Opening Update Form...$showUpdateForm")
-                }
-            }
-        ){
-            Icon(painter = painterResource(Res.drawable.updateicon), contentDescription = "")
-        }
-    }
-
-    if(showUpdateForm){
-        AnimatedVisibility(
-            visible = showUpdateForm
-        ) {
-
-            UpdateForm(showUpdateForm, dept)
-        }
-    }
-}*/
-/*
-
-@Composable
-fun UpdateForm(visibility: Boolean, dept: Dept) {
-    val viewModel = DepartmentsViewModel()
-    var visible: Boolean by remember { mutableStateOf(visibility) }
-    var newDeptName: String by remember { mutableStateOf(dept.name) }
-    var newDeptDescription: String by remember { mutableStateOf(dept.description) }
-    var displayErrorDialog: Boolean by remember { mutableStateOf(false) }
-    lateinit var newDept: Dept
-
-    AnimatedVisibility(
-        visible = visible){
-        Box(
-            modifier = Modifier.height(500.dp).width(500.dp),
-        ) {
-            Column(
-                modifier = Modifier.height(500.dp).width(500.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                OutlinedTextField(
-                    value = newDeptName,
-                    onValueChange = { newDeptName = it },
-                    label = { Text(text = "New Department Name: ") }
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                OutlinedTextField(
-                    value = newDeptDescription,
-                    onValueChange = { newDeptDescription = it },
-                    label = { Text(text = "New Department Description: ") }
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Button(
-                        onClick = {
-                            newDept = Dept(name = newDeptName, description = newDeptDescription)
-                            viewModel.updateDept(dept, newDept)
-
-                            if (viewModel.updateResult.value == 1 || viewModel.updateResult.value == 2) {
-                                visible = false
-                            } else {
-                                displayErrorDialog = true
-                            }
-                        }
-                    ) {
-                        Text(text = "Update")
-                    }
-
-                    Button(
-                        onClick = {
-                            visible = false
-                        }
-                    ) {
-                        Text(text = "Cancel")
-                    }
-                }
-            }
-        }
-        if(displayErrorDialog){
-            AnimatedVisibility(
-                visible = displayErrorDialog
-            ) {
-                ErrorDialog("Update Error", "Unable to update data due to an error.", displayErrorDialog)
-            }
-        }
-
-    }
-}
-*/
 
 @Composable
 fun ErrorDialog(title: String, errorMessage: String, visible: Boolean) {
