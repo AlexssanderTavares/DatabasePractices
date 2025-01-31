@@ -198,9 +198,8 @@ fun DepartmentsView(visible: Boolean) {
     var dept: Dept? by remember { mutableStateOf(null)}
     var newDeptName: String by remember { mutableStateOf("") }
     var newDeptDescription: String by remember { mutableStateOf("") }
-    var displayCreationErrorDialog: Boolean by remember { mutableStateOf(false) }
-    var creationErrorMessage: String by remember { mutableStateOf("") }
-    var updateErrorMessage: String by remember { mutableStateOf("") }
+    var displayErrorDialog: Boolean by remember { mutableStateOf(false) }
+    var errorMessage: String by remember { mutableStateOf("") }
 
     deptViewModel.getDeptList()
 
@@ -258,8 +257,8 @@ fun DepartmentsView(visible: Boolean) {
                                 }
 
                             } catch (e: SQLException) {
-                                displayCreationErrorDialog = true
-                                creationErrorMessage = e.message!!
+                                displayErrorDialog = true
+                                errorMessage = e.message!!
                             }
                         }
                     ) {
@@ -273,10 +272,11 @@ fun DepartmentsView(visible: Boolean) {
                                 if(dept?.name != deptViewModel.getResult.value?.name || dept?.description != deptViewModel.getResult.value?.description ){
                                     deptViewModel.update(deptViewModel.getResult.value!!, dept!!)
                                     deptViewModel.getDeptList()
+                                    TODO("Do something with updateResult value.")
                                 }
                             }catch (e: SQLException){
-
-                                updateErrorMessage = e.message!!
+                                displayErrorDialog = true
+                                errorMessage = e.message!!
                             }
 
                         }
@@ -287,6 +287,14 @@ fun DepartmentsView(visible: Boolean) {
                     Button(
                         modifier = Modifier.padding(8.dp),
                         onClick = {
+                            try{
+                                dept = deptViewModel.getResult.value!!
+                                deptViewModel.delete(dept!!)
+                                deptViewModel.getDeptList()
+                            } catch (e: SQLException){
+                                displayErrorDialog = true
+                                errorMessage = e.message!!
+                            }
 
                         }
                     ) {
@@ -323,9 +331,10 @@ fun DepartmentsView(visible: Boolean) {
         }
     }
 
-    if(displayCreationErrorDialog){
-        ErrorDialog("Creation Error", creationErrorMessage, displayCreationErrorDialog)
+    if(displayErrorDialog){
+        ErrorDialog("Something goes wrong!", errorMessage, displayErrorDialog)
     }
+    
 }
 
 @Composable

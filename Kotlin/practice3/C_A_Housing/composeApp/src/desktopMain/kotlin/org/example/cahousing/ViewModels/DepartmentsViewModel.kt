@@ -38,6 +38,9 @@ class DepartmentsViewModel : ViewModel() {
     private val _updateResult: MutableStateFlow<Int> = MutableStateFlow(0)
     val updateResult: StateFlow<Int> = _updateResult.asStateFlow()
 
+    private val _deleteResult: MutableStateFlow<Int> = MutableStateFlow(0)
+    val deleteResult: StateFlow<Int> = _deleteResult.asStateFlow()
+
     fun create(dept: Dept) {
         repo = DeptRepository()
         viewModelScope.launch(Dispatchers.IO) {
@@ -83,6 +86,18 @@ class DepartmentsViewModel : ViewModel() {
             _updateResult.value = repo.update(dept, data)
             if(updateResult.value > 0){
                 println("Number of updates: ${updateResult.value}")
+            }
+        }
+    }
+
+    fun delete(dept: Dept) {
+        repo = DeptRepository()
+        viewModelScope.launch(Dispatchers.IO) {
+            println("Deleting ${dept}")
+            _deleteResult.value = repo.delete(dept)
+            if(deleteResult.value > 0) {
+                println("Data deleted successfully.")
+                println("Number of deletions: ${deleteResult.value}")
             }
         }
     }
