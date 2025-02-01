@@ -16,9 +16,13 @@ import org.example.cahousing.DataSource.Models.Dept
 import org.example.cahousing.DataSource.Models.Models
 import org.example.cahousing.DataSource.Repositories.DeptRepository
 import org.example.cahousing.DataSource.Repositories.Repository
-import org.example.cahousing.ViewModels.UIStates.DepartmentsViewUIState
+
 
 class DepartmentsViewModel : ViewModel() {
+
+    init{
+        getDeptList()
+    }
 
     private lateinit var repo: Repository<Dept>
 
@@ -45,9 +49,10 @@ class DepartmentsViewModel : ViewModel() {
         repo = DeptRepository()
         viewModelScope.launch(Dispatchers.IO) {
             println("Creating ${dept.name}")
-            _creationResult.value = repo.create(dept)
+            _creationResult.update { repo.create(dept) }
             println("Creation Successful!")
             println("Process result: ${creationResult.value}")
+            getDeptList()
         }
     }
 
@@ -55,20 +60,19 @@ class DepartmentsViewModel : ViewModel() {
         repo = DeptRepository()
         viewModelScope.launch(Dispatchers.IO) {
             println("Trying to get department with that name...")
-            _getResult.value = repo.get(name)
+            _getResult.update { repo.get(name) }
             println("Success getting Department!!!")
             println("Department found: ${getResult.value}")
         }
     }
 
-    fun getDeptList() {
+    fun getDeptList(){
         repo = DeptRepository()
         viewModelScope.launch(Dispatchers.IO) {
             println("Getting Departments list")
-            _deptList.value = repo.getAll()
-            println("Departments List:")
+            _deptList.update { repo.getAll() }
             deptList.value.forEach {
-                println("Department: ${it.name}")
+                println(it)
             }
         }
     }
@@ -87,6 +91,7 @@ class DepartmentsViewModel : ViewModel() {
             if(updateResult.value > 0){
                 println("Number of updates: ${updateResult.value}")
             }
+            getDeptList()
         }
     }
 
@@ -94,11 +99,16 @@ class DepartmentsViewModel : ViewModel() {
         repo = DeptRepository()
         viewModelScope.launch(Dispatchers.IO) {
             println("Deleting ${dept}")
-            _deleteResult.value = repo.delete(dept)
+            _deleteResult.update { repo.delete(dept) }
+            _deptList.update {
+                it.remove(dept)
+                it
+            }
             if(deleteResult.value > 0) {
                 println("Data deleted successfully.")
                 println("Number of deletions: ${deleteResult.value}")
             }
+            getDeptList()
         }
     }
 

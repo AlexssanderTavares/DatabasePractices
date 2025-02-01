@@ -46,7 +46,6 @@ class DataBaseActions {
                 }
             }
 
-
             try {
                 val query: PreparedStatement =
                     db.prepareStatement("INSERT INTO Dept (STR_name, STR_description) VALUES ('${dept.name}','${dept.description}');")
