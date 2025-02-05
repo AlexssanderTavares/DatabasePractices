@@ -6,6 +6,7 @@ import org.example.cahousing.DataSource.Data.DataBaseActions
 import org.example.cahousing.DataSource.Models.Address
 import org.example.cahousing.DataSource.Models.Dept
 import org.example.cahousing.DataSource.Models.Employee
+import org.example.cahousing.DataSource.Models.Models
 import org.example.cahousing.DataSource.Models.Overseer
 import org.example.cahousing.DataSource.Models.Project
 import org.example.cahousing.DataSource.Models.ProjectEmployeeContract
@@ -20,6 +21,49 @@ import kotlin.test.fail
 class DataBaseActionsTest {
     private val dbActions: DataBaseActions = DataBaseActions()
     private val formatter: PostalCodeFormatter = PostalCodeFormatter()
+
+    //New Create context
+    @Test
+    fun ShouldCreateOneDataOfEachEntityAndReturnTheNumberOfAffectedRows(){
+        runBlocking {
+            lateinit var doll: Models
+            //Dept
+            println("Trying to create Dept")
+            doll = Dept(name = "New Test 6", description = "New test department 2")
+            assertEquals(1, dbActions.create(doll))
+            println("Success!!!")
+
+            //Address
+            println("Trying to create Address")
+            doll = Address("44236758", "Rua Rocha Garça", "Ribeiros", "Praia Pequena")
+            assertEquals(1, dbActions.create(doll))
+            println("Success!!!")
+
+            //Employee
+            println("Trying to create Employee")
+            val emp: Employee = Employee(name = "New Test 6", wage = 4000.00, sex = "male", address = "11736850", idDept = 1)
+            assertEquals(1, dbActions.create(emp))
+            println("Success!!!")
+
+            //Project
+            println("Trying to create Project")
+            val project: Project = Project(name = "New Test 6", dept = 1)
+            assertEquals(1, dbActions.create(project))
+            println("Success!!!")
+
+            //Overseer
+            println("Trying to create Overseer")
+            doll = Overseer(empName = "New Test 6", wage = 4000.00)
+            assertEquals(1, dbActions.create(doll))
+            println("Success!!!")
+
+            //Contract
+            println("Trying to create Contract")
+            doll = ProjectEmployeeContract(project = project, employee = emp, description = "Test 2 Description")
+            assertEquals(1, dbActions.create(doll))
+            println("Success!!!")
+        }
+    }
 
     // DEPT CONTEXT
 
