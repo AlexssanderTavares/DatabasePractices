@@ -24,7 +24,7 @@ class DataBaseActionsTest {
 
     //New Create context
     @Test
-    fun ShouldCreateOneDataOfEachEntityAndReturnTheNumberOfAffectedRows(){
+    fun ShouldCreateOneDataOfEachEntityAndReturnTheNumberOfAffectedRows() {
         runBlocking {
             lateinit var doll: Models
             //Dept
@@ -41,7 +41,13 @@ class DataBaseActionsTest {
 
             //Employee
             println("Trying to create Employee")
-            val emp: Employee = Employee(name = "New Test 6", wage = 4000.00, sex = "male", address = "11736850", idDept = 1)
+            val emp: Employee = Employee(
+                name = "New Test 6",
+                wage = 4000.00,
+                sex = "male",
+                address = "11736850",
+                idDept = 1
+            )
             assertEquals(1, dbActions.create(emp))
             println("Success!!!")
 
@@ -59,14 +65,78 @@ class DataBaseActionsTest {
 
             //Contract
             println("Trying to create Contract")
-            doll = ProjectEmployeeContract(project = project, employee = emp, description = "Test 2 Description")
+            doll = ProjectEmployeeContract(
+                project = project,
+                employee = emp,
+                description = "Test 2 Description"
+            )
             assertEquals(1, dbActions.create(doll))
             println("Success!!!")
         }
     }
 
-    // DEPT CONTEXT
+    @Test
+    fun ShouldGetAnyModelDataClass() {
+        runBlocking {
+            try {
+                println("Trying to get data from table Dept")
+                assertEquals(
+                    Dept(
+                        name = "New Test 6",
+                        description = "New test department 2"
+                    ),
+                    dbActions.get<Dept>("New Test 6")!!
+                )
 
+                println("Trying to get data from table Address")
+                assertEquals(
+                    Address(
+                        cep = "11736850",
+                        road = "Rua Rocha Garça",
+                        district = "Ribeiros",
+                        city = "Praia Pequena"
+                    ), dbActions.get<Address>("11736850")!!
+                )
+
+                println("Trying to get data from table Employee")
+                assertEquals(
+                    Employee(
+                        name = "New Test 6",
+                        wage = 4000.00,
+                        sex = "male",
+                        address = "11736850",
+                        idDept = 1
+                    ),
+                    dbActions.get<Employee>("New Test 6")!!
+                )
+                println("Trying to get data from table Project")
+                assertEquals(
+                    Project(
+                        name = "New Test 6",
+                        dept = 1
+                    ),
+                    dbActions.get<Project>("New Test 6")!!
+                )
+                println("Trying to get data from table Overseer")
+                assertEquals(
+                    Overseer(
+                        empName = "New Test 6",
+                        wage = 4000.00
+                    ), dbActions.get<Overseer>("New Test 6")!!
+                )
+
+                println("Test success!!!")
+
+            } catch (e: Exception){
+                fail("Failed due to: ${e.message}")
+            }
+        }
+    }
+}
+
+// DEPT CONTEXT
+//TODO("Delete this")
+/*
     @Test
     fun ShouldCreateANewDeptAndReturnTheNumberOfAffectedRows() {
         runBlocking {
@@ -149,7 +219,7 @@ class DataBaseActionsTest {
     }
 
     // ADDRESS CONTEXT
-
+    //TODO("Delete this")
     @Test
     fun ShouldCreateANewAddressAndReturnTheNumberOfAffectedRows() {
         runBlocking {
@@ -236,7 +306,7 @@ class DataBaseActionsTest {
     }
 
     // EMPLOYEE CONTEXT
-
+    //TODO("Delete this")
     @Test
     fun ShouldCreateANewEmployeeAndReturnTheNumberOfAffectedRows() {
         runBlocking {
@@ -328,7 +398,7 @@ class DataBaseActionsTest {
     }
 
     // PROJECT CONTEXT
-
+    //TODO("Delete this")
     @Test
     fun ShouldCreateANewProjectAndReturnTheNumberOfAffectedRows() {
         runBlocking {
@@ -412,7 +482,7 @@ class DataBaseActionsTest {
     }
 
     // CONTRACT EMPLOYEE_PROJECT CONTEXT
-
+    //TODO("Delete this")
     @Test
     fun ShouldCreateANewContractAndReturnTheNumberOfAffectedRows() {
         runBlocking {
@@ -503,7 +573,7 @@ class DataBaseActionsTest {
     }
 
     // OVERSEER CONTEXT
-
+    //TODO("Delete this")
     @Test
     fun ShouldCreateOverseerAndReturnTheNumberOfAffectedRows(){
         runBlocking {
@@ -585,4 +655,4 @@ class DataBaseActionsTest {
             }
         }
     }
-}
+}*/
