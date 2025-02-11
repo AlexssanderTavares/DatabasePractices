@@ -3,6 +3,7 @@ package org.example.cahousing.DataSource.Repositories
 import org.example.cahousing.DataSource.Data.DataBaseActions
 import org.example.cahousing.DataSource.Models.Project
 
+/*
 class ProjectRepository : Repository<Project> {
 
     companion object{
@@ -30,4 +31,4 @@ class ProjectRepository : Repository<Project> {
         return db.deleteProject(model)
     }
 
-}
+}*/

@@ -5,7 +5,7 @@ import org.example.cahousing.DataSource.Data.DataBaseActions
 import org.example.cahousing.DataSource.Models.Dept
 import org.example.cahousing.DataSource.Models.Models
 
-class DeptRepository : Repository<Dept> {
+/*class DeptRepository : Repository<Dept> {
 
     companion object {
         val db: DataBaseActions = DataBaseActions()
@@ -32,4 +32,4 @@ class DeptRepository : Repository<Dept> {
     }
 
 
-}
+}*/

@@ -7,5 +7,5 @@ data class Overseer(
     val id: Int? = null,
     val empName: String,
     var wage: Double,
-    var timeWorked: String? = "0000-00-00 00:00:00"
+    var timeWorked: String? = null
 ) : Models

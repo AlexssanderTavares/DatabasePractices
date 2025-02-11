@@ -2,6 +2,7 @@ package org.example.cahousing.DataSource.Repositories
 
 import org.example.cahousing.DataSource.Data.DataBaseActions
 import org.example.cahousing.DataSource.Models.Employee
+/*
 
 class EmployeeRepository : Repository<Employee>{
 
@@ -29,4 +30,4 @@ class EmployeeRepository : Repository<Employee>{
         return db.deleteEmployee(model)
     }
 
-}
+}*/

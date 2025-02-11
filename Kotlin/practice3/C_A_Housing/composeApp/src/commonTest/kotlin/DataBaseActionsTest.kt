@@ -12,7 +12,10 @@ import org.example.cahousing.DataSource.Models.Project
 import org.example.cahousing.DataSource.Models.ProjectEmployeeContract
 import org.example.cahousing.DataSource.Utilities.PostalCodeFormatter
 import org.junit.Assert.assertNotEquals
+import java.sql.Date
 import java.sql.SQLException
+import java.sql.Timestamp
+import java.time.LocalDate
 import kotlin.math.truncate
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -27,39 +30,40 @@ class DataBaseActionsTest {
     fun ShouldCreateOneDataOfEachEntityAndReturnTheNumberOfAffectedRows() {
         runBlocking {
             lateinit var doll: Models
-            //Dept
+             //Dept
             println("Trying to create Dept")
-            doll = Dept(name = "New Test 6", description = "New test department 2")
+            doll = Dept(name = "New Test 3", description = "New test department 2")
             assertEquals(1, dbActions.create(doll))
             println("Success!!!")
 
             //Address
             println("Trying to create Address")
-            doll = Address("44236758", "Rua Rocha Garça", "Ribeiros", "Praia Pequena")
+            doll = Address("44236752", "Rua Rocha Garça", "Ribeiros", "Praia Pequena")
             assertEquals(1, dbActions.create(doll))
             println("Success!!!")
 
             //Employee
             println("Trying to create Employee")
             val emp: Employee = Employee(
-                name = "New Test 6",
+                name = "New Test 3",
                 wage = 4000.00,
+                bornDate = "1970-01-01",
+                timeWorked = null,
                 sex = "male",
-                address = "11736850",
+                address = "44236752",
                 idDept = 1
             )
             assertEquals(1, dbActions.create(emp))
             println("Success!!!")
-
             //Project
             println("Trying to create Project")
-            val project: Project = Project(name = "New Test 6", dept = 1)
+            val project: Project = Project(name = "New Test 3", dept = 1)
             assertEquals(1, dbActions.create(project))
             println("Success!!!")
 
             //Overseer
             println("Trying to create Overseer")
-            doll = Overseer(empName = "New Test 6", wage = 4000.00)
+            doll = Overseer(empName = "New Test 3", wage = 4000.00)
             assertEquals(1, dbActions.create(doll))
             println("Success!!!")
 
@@ -73,7 +77,7 @@ class DataBaseActionsTest {
             assertEquals(1, dbActions.create(doll))
             println("Success!!!")
         }
-    }
+        }
 
     @Test
     fun ShouldGetAnyModelDataClass() {
@@ -82,49 +86,54 @@ class DataBaseActionsTest {
                 println("Trying to get data from table Dept")
                 assertEquals(
                     Dept(
-                        name = "New Test 6",
+                        id =  1,
+                        name = "New Test 9",
                         description = "New test department 2"
                     ),
-                    dbActions.get<Dept>("New Test 6")!!
+                    dbActions.get<Dept>("New Test 9")!!
                 )
 
                 println("Trying to get data from table Address")
                 assertEquals(
                     Address(
-                        cep = "11736850",
+                        cep = "44.236-756",
                         road = "Rua Rocha Garça",
                         district = "Ribeiros",
                         city = "Praia Pequena"
-                    ), dbActions.get<Address>("11736850")!!
+                    ), dbActions.get<Address>("44.236-756")!!
                 )
 
                 println("Trying to get data from table Employee")
                 assertEquals(
                     Employee(
-                        name = "New Test 6",
+                        id = 3499,
+                        name = "New Test 8",
                         wage = 4000.00,
+                        bornDate = "1970-01-01",
+                        timeWorked = null,
                         sex = "male",
-                        address = "11736850",
+                        address = "44.236-756",
                         idDept = 1
                     ),
-                    dbActions.get<Employee>("New Test 6")!!
+                    dbActions.get<Employee>("New Test 8")!!
                 )
                 println("Trying to get data from table Project")
                 assertEquals(
                     Project(
-                        name = "New Test 6",
+                        name = "New Test 8",
                         dept = 1
                     ),
-                    dbActions.get<Project>("New Test 6")!!
+                    dbActions.get<Project>("New Test 8")!!
                 )
                 println("Trying to get data from table Overseer")
                 assertEquals(
                     Overseer(
-                        empName = "New Test 6",
+                        id = 1,
+                        empName = "New Test 8",
                         wage = 4000.00
-                    ), dbActions.get<Overseer>("New Test 6")!!
+                    ), dbActions.get<Overseer>("New Test 8")!!
                 )
-
+                //TODO("Contract test")
                 println("Test success!!!")
 
             } catch (e: Exception){
@@ -132,7 +141,56 @@ class DataBaseActionsTest {
             }
         }
     }
+
+    @Test
+    fun ShouldGetEveryModelDataClass() {
+        runBlocking {
+            try{
+                val listDept = dbActions.getAll<Dept>()
+                val listAddress = dbActions.getAll<Address>()
+                val listEmployee = dbActions.getAll<Employee>()
+                val listProject = dbActions.getAll<Project>()
+                val listOverseer = dbActions.getAll<Overseer>()
+                val listContract = dbActions.getAll<ProjectEmployeeContract>()
+
+                //Dept list
+                println("Trying to get list of Dept")
+                println(listDept)
+                assert(listDept.isNotEmpty())
+                assert(listDept.size >= 1)
+                //Address list
+                println("Trying to get list of Address")
+                println(listAddress)
+                assert(listAddress.isNotEmpty())
+                assert(listAddress.size >= 1)
+                //Employee list
+                println("Trying to get list of Employee")
+                println(listEmployee)
+                assert(listEmployee.isNotEmpty())
+                assert(listEmployee.size >= 1)
+                //Project list
+                println("Trying to get list of Project")
+                println(listProject)
+                assert(listProject.isNotEmpty())
+                assert(listProject.size >= 1)
+                //Overseer list
+                println("Trying to get list of Overseer")
+                println(listOverseer)
+                assert(listOverseer.isNotEmpty())
+                assert(listOverseer.size >= 1)
+                //Contract list
+                println("Trying to get list of Contract")
+                println(listContract)
+                assert(listContract.isNotEmpty())
+                assert(listContract.size >= 1)
+                println("Test success!!!")
+            }catch (e: Exception){
+                fail("Test failed due to: ${e.message}")
+            }
+        }
+    }
 }
+
 
 // DEPT CONTEXT
 //TODO("Delete this")

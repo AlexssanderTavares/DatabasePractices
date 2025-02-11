@@ -14,14 +14,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.cahousing.DataSource.Models.Dept
 import org.example.cahousing.DataSource.Models.Models
-import org.example.cahousing.DataSource.Repositories.DeptRepository
 import org.example.cahousing.DataSource.Repositories.Repository
 
 
 class DepartmentsViewModel : ViewModel() {
 
     init{
-        getDeptList()
+        //getDeptList()
     }
 
     private lateinit var repo: Repository<Dept>
@@ -46,17 +45,17 @@ class DepartmentsViewModel : ViewModel() {
     val deleteResult: StateFlow<Int> = _deleteResult.asStateFlow()
 
     fun create(dept: Dept) {
-        repo = DeptRepository()
+        //repo = DeptRepository()
         viewModelScope.launch(Dispatchers.IO) {
             println("Creating ${dept.name}")
             _creationResult.update { repo.create(dept) }
             println("Creation Successful!")
             println("Process result: ${creationResult.value}")
-            getDeptList()
+          //  getDeptList()
         }
     }
 
-    fun getDept(name: String) {
+    /*fun getDept(name: String) {
         repo = DeptRepository()
         viewModelScope.launch(Dispatchers.IO) {
             println("Trying to get department with that name...")
@@ -110,6 +109,6 @@ class DepartmentsViewModel : ViewModel() {
             }
             getDeptList()
         }
-    }
+    }*/
 
 }

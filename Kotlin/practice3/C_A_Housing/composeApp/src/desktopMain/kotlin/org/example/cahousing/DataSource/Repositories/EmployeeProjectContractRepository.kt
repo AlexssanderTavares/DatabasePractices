@@ -3,6 +3,7 @@ package org.example.cahousing.DataSource.Repositories
 import org.example.cahousing.DataSource.Data.DataBaseActions
 import org.example.cahousing.DataSource.Models.ProjectEmployeeContract
 import org.example.cahousing.DataSource.Utilities.PostalCodeFormatter
+/*
 
 class EmployeeProjectContractRepository : Repository<ProjectEmployeeContract> {
 
@@ -30,4 +31,4 @@ class EmployeeProjectContractRepository : Repository<ProjectEmployeeContract> {
         return db.deleteProjectContract(model)
     }
 
-}
+}*/

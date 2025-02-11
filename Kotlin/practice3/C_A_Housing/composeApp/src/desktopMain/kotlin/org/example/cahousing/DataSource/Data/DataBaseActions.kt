@@ -17,15 +17,17 @@ import org.example.cahousing.DataSource.Models.Models
 import org.example.cahousing.DataSource.Models.Overseer
 import org.example.cahousing.DataSource.Models.Project
 import org.example.cahousing.DataSource.Models.ProjectEmployeeContract
-import org.example.cahousing.DataSource.Repositories.AddressRepository
 import org.example.cahousing.DataSource.Utilities.PostalCodeFormatter
 import org.example.cahousing.getPlatform
 import org.jetbrains.skia.TextBlob
 import java.sql.Connection
+import java.sql.Date
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Timestamp
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.InvalidPropertiesFormatException
 import javax.swing.text.html.HTMLDocument.HTMLReader.PreAction
 import kotlin.random.Random
@@ -170,7 +172,7 @@ class DataBaseActions {
 
                         if (projectRes.row == 1 && employeeRes.row == 1) {
                             val query3: PreparedStatement =
-                                db.prepareStatement("INSERT INTO Employee_Project (STR_project, STR_employee) VALUES ('${model.project.name}', '${model.employee.name}');")
+                                db.prepareStatement("INSERT INTO Employee_Project (STR_project, STR_employee, STR_description) VALUES ('${model.project.name}', '${model.employee.name}', '${model.description}');")
                             query3.execute()
                             rows++
                             println("Query OK! Number of affected rows: ${rows}")
@@ -267,32 +269,31 @@ class DataBaseActions {
                         res.next()
 
                         if (res.row == 1) {
+
                             model = Employee(
-                                res.getInt("I_ID"),
-                                res.getString("STR_name"),
-                                res.getString("STR_sex"),
-                                res.getDouble("F_wage"),
-                                res.getDate("dt_born_date")?.toString() ?: "0000-00-00",
-                                res.getTimestamp("time_worked_journey")?.toString()
-                                    ?: "0000-00-00 00:00:00",
-                                res.getString("I_ADDRESS_cep"),
-                                res.getInt("I_DEPT_num")
+                                id = res.getInt("I_ID"),
+                                name = res.getString("STR_name"),
+                                sex = res.getString("STR_sex"),
+                                wage = res.getDouble("F_wage"),
+                                bornDate = res.getDate("dt_born_date")?.toString(),
+                                timeWorked = res.getTimestamp("time_worked_journey")?.toString(),
+                                address = res.getString("I_ADDRESS_cep"),
+                                idDept = res.getInt("I_DEPT_num")
                             )
                             println("Query ok! Object returned: ${model}")
                         } else {
-                            throw SQLException("Register doesn't exit.!")
+                            throw SQLException("Register doesn't exit!")
                         }
                     }
 
                     Project::class -> {
-                        val query: PreparedStatement =
-                            db.prepareStatement("SELECT * FROM Project WHERE STR_NAME = '${model}';")
+                        val query: PreparedStatement = db.prepareStatement("SELECT * FROM Project WHERE STR_name = '${varchar}';")
                         val res: ResultSet = query.executeQuery()
                         res.next()
 
                         if (res.row == 1) {
                             model = Project(
-                                res.getString("STR_NAME"),
+                                res.getString("STR_name"),
                                 res.getInt("I_num_dept")
                             )
                             println("Query ok! Object returned: ${model}")
@@ -313,7 +314,6 @@ class DataBaseActions {
                                 res.getString("STR_EMP_name"),
                                 res.getDouble("F_wage"),
                                 res.getTimestamp("time_worked_journey")?.toString()
-                                    ?: "0000-00-00 00:00:00"
                             )
                         } else {
                             throw IllegalArgumentException("Register doesn't exist.")
@@ -337,13 +337,13 @@ class DataBaseActions {
                                     res.getString("STR_project")
                                 }';"
                             )
-                            val projecrRes: ResultSet = queryForProject.executeQuery()
-                            projecrRes.next()
+                            val projectRes: ResultSet = queryForProject.executeQuery()
+                            projectRes.next()
 
-                            if (projecrRes.row == 1) {
+                            if (projectRes.row == 1) {
                                 project = Project(
-                                    projecrRes.getString("STR_name"),
-                                    projecrRes.getInt("I_num_dept")
+                                    projectRes.getString("STR_name"),
+                                    projectRes.getInt("I_num_dept"),
                                 )
                             } else {
                                 throw IllegalArgumentException("This project doesn't exist.")
@@ -363,14 +363,15 @@ class DataBaseActions {
                                     name = employeeRes.getString("STR_name"),
                                     sex = employeeRes.getString("STR_sex"),
                                     wage = employeeRes.getDouble("F_wage"),
-                                    bornDate = employeeRes.getDate("dt_born_date").toString(),
+                                    bornDate = employeeRes.getDate("dt_born_date").toString() ?: "1970-01-01",
+                                    timeWorked = employeeRes.getTimestamp("time_worked_journey").toString() ?: "1970-01-01 00:00:00",
                                     address = employeeRes.getString("I_ADDRESS_cep"),
                                     idDept = employeeRes.getInt("I_DEPT_num")
                                 )
                             } else {
                                 throw IllegalArgumentException("This employee doesn't exist.")
                             }
-                            model = ProjectEmployeeContract(id = res.getInt("id_contract"), project = project, employee = employee)
+                            model = ProjectEmployeeContract(id = res.getInt("id_contract"), project = project, employee = employee, description = res.getString("STR_description"))
                         } else {
                             throw IllegalArgumentException("Register doesn't exist.")
                         }
@@ -391,125 +392,115 @@ class DataBaseActions {
         }
     }
 
-    //TODO("Must be finished and tested")
     suspend inline fun <reified T : Models> getAll(): ArrayList<Models> {
         val db: Connection = DataBaseConnection.CONNECTION
         var rows: Int = 0
-        var list: ArrayList<Models> = arrayListOf()
+        val list: ArrayList<Models> = arrayListOf()
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 when (T::class) {
                     Dept::class -> {
                         val query: PreparedStatement = db.prepareStatement("SELECT * FROM Dept;")
                         val res: ResultSet = query.executeQuery()
-                        res.next()
-                        if (res.row >= 1) {
+
+                        while (res.next()) {
                             val dept: Dept = Dept(
                                 id = res.getInt("I_num_dept"),
                                 name = res.getString("STR_name"),
                                 description = res.getString("STR_description")
                             )
-
-                            while (list.size < res.row) {
-                                list.add(dept as T)
-                                rows++
+                            list.add(dept)
+                            rows++
                             }
-                        }
-                        println("Query OK! Number of retrieved rows: ${rows}")
                     }
 
                     Address::class -> {
                         val query: PreparedStatement = db.prepareStatement("SELECT * FROM Address;")
                         val res: ResultSet = query.executeQuery()
-                        res.next()
 
-                        if (res.row >= 1) {
+                        while (res.next()) {
                             val address: Address = Address(
                                 cep = res.getString("I_cep"),
                                 road = res.getString("STR_road"),
                                 district = res.getString("STR_district"),
                                 city = res.getString("STR_city")
                             )
-
-                            while (list.size < res.row) {
-                                list.add(address as T)
-                                rows++
-                            }
+                            list.add(address)
+                            rows++
                         }
-                        println("Query OK! Number of retrieved rows: ${rows}")
                     }
 
                     Employee::class -> {
-                        val query: PreparedStatement =
-                            db.prepareStatement("SELECT * FROM Employee;")
+                        val query: PreparedStatement = db.prepareStatement("SELECT * FROM Employee;")
                         val res: ResultSet = query.executeQuery()
-                        res.next()
 
-                        if (res.row >= 1) {
+                        while (res.next()) {
                             val emp: Employee = Employee(
                                 id = res.getInt("I_ID"),
                                 name = res.getString("STR_name"),
                                 wage = res.getDouble("F_wage"),
                                 sex = res.getString("STR_sex"),
-                                bornDate = res.getTimestamp("dt_born_date").toString(),
+                                bornDate = res.getDate("dt_born_date")?.toString() ?: "1970-01-01",
                                 address = res.getString("I_ADDRESS_cep"),
                                 idDept = res.getInt("I_DEPT_num"),
-                                timeWorked = res.getTimestamp("dt_time_worked").toString()
+                                timeWorked = res.getTimestamp("time_worked_journey")?.toString() ?: "1970-01-01 00:00:00"
                             )
-
-                            while (list.size < res.row) {
-                                list.add(emp as T)
-                                rows++
-                            }
+                            list.add(emp)
+                            rows++
                         }
-
-                        println("Query OK! Number of retrieved rows: ${rows}")
                     }
 
                     Project::class -> {
                         val query: PreparedStatement = db.prepareStatement("SELECT * FROM Project;")
                         val res: ResultSet = query.executeQuery()
-                        res.next()
 
-
-                        if (res.row >= 1) {
+                        while(res.next()) {
                             val project: Project = Project(
                                 name = res.getString("STR_name"),
                                 dept = res.getInt("I_num_dept")
                             )
 
-                            while (list.size < res.row) {
-                                list.add(project as T)
-                                rows++
-                            }
+                            list.add(project)
+                            rows++
                         }
-
-                        println("Query OK! Number of retrieved rows: ${rows}")
                     }
 
                     ProjectEmployeeContract::class -> {
-                        val query: PreparedStatement =
-                            db.prepareStatement("SELECT * FROM Employee_Project;")
+                        val query: PreparedStatement = db.prepareStatement("SELECT * FROM Employee_Project;")
                         val res: ResultSet = query.executeQuery()
-                        res.next()
 
-                        if (res.row >= 1) {
-                            TODO("WE CAN'T DO THIS YET, WE MUST IMPLEMENT A NEW GET METHOD FOR THIS CASE")
-                        }
+                            while(res.next()){
+                                val project: Project = get<Project>(res.getString("STR_project"))!! as Project
+                                val emp: Employee = get<Employee>(res.getString("STR_employee"))!! as Employee
+
+                                val contract: ProjectEmployeeContract = ProjectEmployeeContract(
+                                    id = res.getInt("id_contract"),
+                                    project = project,
+                                    employee = emp
+                                )
+                                list.add(contract)
+                                rows++
+                            }
                     }
 
                     Overseer::class -> {
-                        val query: PreparedStatement =
-                            db.prepareStatement("SELECT * FROM Overseer;")
+                        val query: PreparedStatement = db.prepareStatement("SELECT * FROM Overseer;")
                         val res: ResultSet = query.executeQuery()
-                        res.next()
 
-                        if (res.row >= 1) {
-                            TODO("WE CAN'T DO THIS YET, WE MUST IMPLEMENT A NEW GET METHOD FOR THIS CASE")
+                        while (res.next()) {
+                            val emp: Employee = get<Employee>(res.getString("STR_EMP_name"))!! as Employee
+                            val overseer: Overseer = Overseer(
+                                id = res.getInt("I_id"),
+                                empName = emp.name,
+                                wage = res.getDouble("F_wage"),
+                                timeWorked = res.getTimestamp("time_worked_journey")?.toString() ?: "1970-01-01"
+                            )
+                            list.add(overseer)
+                            rows++
                         }
-
                     }
                 }
+                println("Query OK! Number of retrieved rows: ${rows}")
             } catch (e: SQLException) {
                 println("Failed to retrieve list of data due to: ${e.message}")
                 e.printStackTrace()
