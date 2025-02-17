@@ -1,6 +1,5 @@
 package org.example.cahousing
 
-import androidx.compose.ui.Modifier
 import kotlinx.coroutines.runBlocking
 import org.example.cahousing.DataSource.Data.DataBaseActions
 import org.example.cahousing.DataSource.Models.Address
@@ -9,17 +8,16 @@ import org.example.cahousing.DataSource.Models.Employee
 import org.example.cahousing.DataSource.Models.Overseer
 import org.example.cahousing.DataSource.Models.Project
 import org.example.cahousing.DataSource.Models.ProjectEmployeeContract
-import org.example.cahousing.DataSource.Utilities.PostalCodeFormatter
+import org.example.cahousing.DataSource.Utilities.Cep
+import org.example.cahousing.DataSource.Utilities.Formatter
 import org.junit.Assert.assertNotEquals
-import java.sql.SQLException
-import kotlin.math.truncate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
 class DataBaseActionsTest {
     private val dbActions: DataBaseActions = DataBaseActions()
-    private val formatter: PostalCodeFormatter = PostalCodeFormatter()
+    private val formatter: Formatter = Cep()
 
     // DEPT CONTEXT
 
@@ -182,7 +180,7 @@ class DataBaseActionsTest {
         runBlocking {
             try {
                 println("Trying to delete an Address data...")
-                val address: Address = Address(formatter.toCepFormat("11715550"),"Rua Frei Antonio do Salvamento, 253", "Ribeirão", "Praia Pequena")
+                val address: Address = Address(formatter.format("11715550"),"Rua Frei Antonio do Salvamento, 253", "Ribeirão", "Praia Pequena")
                 assertEquals(1, dbActions.deleteAddress(address))
                 println("Test Succeed!")
             } catch (e: Exception) {
@@ -407,7 +405,7 @@ class DataBaseActionsTest {
             try{
                 println("Trying to get registered contract by project name...")
                 val project: Project = Project("Test Project", 1)
-                val employee: Employee = Employee(name ="TestBot", sex = "Female", wage = 1357.51, bornDate = "1996-04-04", address = formatter.toCepFormat("11715550"), idDept = 1)
+                val employee: Employee = Employee(name ="TestBot", sex = "Female", wage = 1357.51, bornDate = "1996-04-04", address = formatter.format("11715550"), idDept = 1)
 
                 val target: ProjectEmployeeContract? = dbActions.getProjectContract(project.name)
                 assertNotEquals(null, target)

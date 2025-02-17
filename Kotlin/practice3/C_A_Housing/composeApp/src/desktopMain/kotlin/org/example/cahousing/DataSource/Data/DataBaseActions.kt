@@ -1,8 +1,5 @@
 package org.example.cahousing.DataSource.Data
 
-import androidx.compose.runtime.simulateHotReload
-import androidx.compose.ui.graphics.prepareTransformationMatrix
-import jdk.internal.net.http.common.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -16,15 +13,12 @@ import org.example.cahousing.DataSource.Models.Employee
 import org.example.cahousing.DataSource.Models.Overseer
 import org.example.cahousing.DataSource.Models.Project
 import org.example.cahousing.DataSource.Models.ProjectEmployeeContract
-import org.example.cahousing.DataSource.Utilities.PostalCodeFormatter
-import org.example.cahousing.getPlatform
+import org.example.cahousing.DataSource.Utilities.Cep
+import org.example.cahousing.DataSource.Utilities.Formatter
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
-import java.sql.Timestamp
-import java.util.InvalidPropertiesFormatException
-import javax.swing.text.html.HTMLDocument.HTMLReader.PreAction
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -32,7 +26,7 @@ import kotlin.random.nextInt
 class DataBaseActions {
 
     private val db: Connection = DataBaseConnection.CONNECTION
-    private val formatter: PostalCodeFormatter = PostalCodeFormatter()
+    private val formatter: Formatter = Cep()
 
 
     // DEPT
@@ -204,7 +198,7 @@ class DataBaseActions {
                 try {
                     val query: PreparedStatement =
                         db.prepareStatement(
-                            "INSERT INTO Address (I_cep, STR_road, STR_district, STR_city) VALUES ('${formatter.toCepFormat(address.cep)}','${address.road}','${address.district}','${address.city}');")
+                            "INSERT INTO Address (I_cep, STR_road, STR_district, STR_city) VALUES ('${formatter.format(address.cep)}','${address.road}','${address.district}','${address.city}');")
                     query.execute()
                     rows++
                     println("Query ok! Rows affected on table Address: ${rows}")
@@ -228,8 +222,8 @@ class DataBaseActions {
 
     suspend fun updateAddress(address: Address, newData: Address): Int {
         var rows: Int = 0
-        address.cep = formatter.toCepFormat(address.cep)
-        newData.cep = formatter.toCepFormat(newData.cep)
+        address.cep = formatter.format(address.cep)
+        newData.cep = formatter.format(newData.cep)
 
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             if (formatter.isValid(address.cep)) {
@@ -382,7 +376,7 @@ class DataBaseActions {
                     "INSERT INTO Employee (STR_name, I_ID, F_wage, STR_sex, dt_born_date, I_ADDRESS_cep, I_DEPT_num) VALUES ('${employee.name}', '${
                         Random.nextInt(Math.round(1111F)..Math.round(9999F))
                     }', '${employee.wage}', '${employee.sex}', '${employee.bornDate}', '${
-                        formatter.toCepFormat(
+                        formatter.format(
                             employee.address
                         )
                     }', '${employee.idDept}');"
