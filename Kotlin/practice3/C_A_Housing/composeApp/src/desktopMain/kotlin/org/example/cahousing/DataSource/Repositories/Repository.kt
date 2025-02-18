@@ -2,7 +2,7 @@ package org.example.cahousing.DataSource.Repositories
 
 import org.example.cahousing.DataSource.Models.Models
 
-interface Repository<T: Models> {
+interface Repository<T: Models>  {
 
     suspend fun create(model: T) : Int
 

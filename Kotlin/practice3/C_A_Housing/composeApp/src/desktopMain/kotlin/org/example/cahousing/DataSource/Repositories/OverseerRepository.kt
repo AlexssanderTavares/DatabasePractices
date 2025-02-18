@@ -3,6 +3,7 @@ package org.example.cahousing.DataSource.Repositories
 import org.example.cahousing.DataSource.Data.DataBaseActions
 import org.example.cahousing.DataSource.Models.Overseer
 
+/*
 class OverseerRepository : Repository<Overseer>{
 
     companion object{
@@ -30,4 +31,4 @@ class OverseerRepository : Repository<Overseer>{
         return db.deleteOverseer(model)
     }
 
-}
+}*/
