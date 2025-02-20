@@ -11,21 +11,24 @@ import kotlinx.coroutines.launch
 import java.lang.ClassNotFoundException
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.PreparedStatement
 import java.sql.SQLException
 import javax.swing.text.DefaultFormatter
 
 class DataBaseConnection {
 
     companion object {
+
         lateinit var CONNECTION: Connection
+        lateinit var TEST_CONNECTION: Connection
+        var connectionStatus: Boolean = false
 
         init {
             CONNECTION = connect()
+            TEST_CONNECTION = connect(true)
         }
 
-        var connectionStatus: Boolean = false
-
-        fun connect(): Connection {
+        private fun connect(testEnvironment: Boolean = false): Connection {
             lateinit var dbConnection: Connection
             val vault: Dotenv = dotenv()
             val user = vault["MYSQL_USER"]
@@ -41,12 +44,20 @@ class DataBaseConnection {
                 println("Driver Class not found")
                 println(e.message)
             }
-            val setDatabase = dbConnection.prepareStatement("USE C_A_Housing;")
-
+            lateinit var setDataBase: PreparedStatement
+            if(!testEnvironment) {
+                setDataBase = dbConnection.prepareStatement("USE C_A_Housing;")
+            } else{
+                setDataBase = dbConnection.prepareStatement("USE C_A_Housing_Test;")
+            }
             try {
-                setDatabase.execute()
+                setDataBase.execute()
                 connectionStatus = true
-                println("Using C_A_housing datadabase, connection success!")
+                if(!testEnvironment) {
+                    println("Using C_A_housing database, connection success!")
+                }else{
+                    println("Using C_A_Housing_Test database, connection success!")
+                }
             } catch (e: SQLException) {
                 println("Database is closed OR don't exist")
                 println(e.message)

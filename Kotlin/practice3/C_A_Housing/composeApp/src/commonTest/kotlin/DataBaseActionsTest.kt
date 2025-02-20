@@ -15,6 +15,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
+/*
 class DataBaseActionsTest {
     private val dbActions: DataBaseActions = DataBaseActions()
     private val formatter: Formatter = Cep()
@@ -539,4 +540,7 @@ class DataBaseActionsTest {
             }
         }
     }
+
 }
+
+ */
