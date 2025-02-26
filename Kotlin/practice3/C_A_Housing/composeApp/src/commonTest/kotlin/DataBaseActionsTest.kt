@@ -1,20 +1,6 @@
 package org.example.cahousing
 
-import kotlinx.coroutines.runBlocking
-import org.example.cahousing.DataSource.Data.DataBaseActions
-import org.example.cahousing.DataSource.Models.Address
-import org.example.cahousing.DataSource.Models.Dept
-import org.example.cahousing.DataSource.Models.Employee
-import org.example.cahousing.DataSource.Models.Overseer
-import org.example.cahousing.DataSource.Models.Project
-import org.example.cahousing.DataSource.Models.ProjectEmployeeContract
-import org.example.cahousing.DataSource.Utilities.Cep
-import org.example.cahousing.DataSource.Utilities.Formatter
-import org.junit.Assert.assertNotEquals
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.fail
-
+//TODO("Should be deleted soon")
 /*
 class DataBaseActionsTest {
     private val dbActions: DataBaseActions = DataBaseActions()

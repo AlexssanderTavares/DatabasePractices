@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.example.cahousing.DataBaseConnection
+import org.example.cahousing.DataSource.Models.Address
 import org.example.cahousing.DataSource.Models.Employee
 import org.example.cahousing.DataSource.Models.Overseer
 import org.example.cahousing.Factories.DataBaseAccessorFactory
@@ -13,16 +14,17 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 
-class OverseerAccessor: DataBaseAccessor<Overseer> {
+class OverseerAccessor: OverseerAccessorImp {
 
     companion object {
         private val db: Connection = DataBaseConnection.CONNECTION
+        private lateinit var employeeAccessor: EmployeeAccessorImp
     }
         override suspend fun create(model: Overseer): Int {
             var rows: Int = 0
             val job: Job = CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    val employee: Employee? = DataBaseAccessorFactory.generate<Employee>().get(model.empName)
+                    val employee: Employee? = employeeAccessor.get(model.empName)
 
                     val query: PreparedStatement =
                         db.prepareStatement("INSERT INTO Overseer (STR_EMP_name, F_wage) VALUES ('${employee?.name}', '${model.wage}');")
@@ -79,7 +81,7 @@ class OverseerAccessor: DataBaseAccessor<Overseer> {
             }else{
                 rows
             }
-        }
+       }
 
        override suspend fun get(varchar: String): Overseer? {
             lateinit var _overseer: Overseer
@@ -110,7 +112,7 @@ class OverseerAccessor: DataBaseAccessor<Overseer> {
             } else {
                 null
             }
-        }
+       }
 
         override suspend fun getAll(): ArrayList<Overseer> {
             lateinit var overseer: Overseer
@@ -167,5 +169,5 @@ class OverseerAccessor: DataBaseAccessor<Overseer> {
             } else {
                 rows
             }
-        }
+       }
 }

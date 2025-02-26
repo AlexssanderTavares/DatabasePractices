@@ -9,7 +9,6 @@ import kotlinx.coroutines.launch
 import org.example.cahousing.DataBaseConnection
 import org.example.cahousing.DataSource.Models.Address
 import org.example.cahousing.DataSource.Models.Dept
-import org.example.cahousing.DataSource.Models.Employee
 import org.example.cahousing.DataSource.Models.Overseer
 import org.example.cahousing.DataSource.Models.Project
 import org.example.cahousing.DataSource.Models.ProjectEmployeeContract
@@ -23,6 +22,7 @@ import kotlin.random.Random
 import kotlin.random.nextInt
 
 
+/*
 class DataBaseActions {
 
     private val db: Connection = DataBaseConnection.CONNECTION
@@ -190,15 +190,15 @@ class DataBaseActions {
     }
 
     // ADDRESS
-    suspend fun createAddress(address: Address): Int {
+    suspend fun createAddress(employee: Address): Int {
         var rows: Int = 0
-        if (formatter.isValid(address.cep)) {
+        if (formatter.isValid(employee.cep)) {
 
             val job: Job = CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val query: PreparedStatement =
                         db.prepareStatement(
-                            "INSERT INTO Address (I_cep, STR_road, STR_district, STR_city) VALUES ('${formatter.format(address.cep)}','${address.road}','${address.district}','${address.city}');")
+                            "INSERT INTO Address (I_cep, STR_road, STR_district, STR_city) VALUES ('${formatter.format(employee.cep)}','${employee.road}','${employee.district}','${employee.city}');")
                     query.execute()
                     rows++
                     println("Query ok! Rows affected on table Address: ${rows}")
@@ -220,17 +220,17 @@ class DataBaseActions {
         }
     }
 
-    suspend fun updateAddress(address: Address, newData: Address): Int {
+    suspend fun updateAddress(employee: Address, newData: Address): Int {
         var rows: Int = 0
-        address.cep = formatter.format(address.cep)
+        employee.cep = formatter.format(employee.cep)
         newData.cep = formatter.format(newData.cep)
 
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
-            if (formatter.isValid(address.cep)) {
+            if (formatter.isValid(employee.cep)) {
                 try {
 
-                    val data: Address? = getAddress(address.cep)
-                    if(data != null && data.cep == address.cep){
+                    val data: Address? = getAddress(employee.cep)
+                    if(data != null && data.cep == employee.cep){
 
                         if(data.road != newData.road) {
                             val query: PreparedStatement =
@@ -262,7 +262,7 @@ class DataBaseActions {
                     e.printStackTrace()
                 }
             }else {
-                throw IllegalArgumentException("${address} doesn't exist.")
+                throw IllegalArgumentException("${employee} doesn't exist.")
             }
         }
         job.join()
@@ -312,7 +312,7 @@ class DataBaseActions {
     }
 
     suspend fun getAllAddress(): ArrayList<Address> {
-        lateinit var address: Address
+        lateinit var employee: Address
         val list: ArrayList<Address> = ArrayList<Address>()
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -320,13 +320,13 @@ class DataBaseActions {
                 val res: ResultSet = query.executeQuery()
 
                 while (res.next()) {
-                    address = Address(
+                    employee = Address(
                         res.getString("I_cep"),
                         res.getString("STR_road"),
                         res.getString("STR_district"),
                         res.getString("STR_city")
                     )
-                    list.add(address)
+                    list.add(employee)
                 }
 
                 println("Query OK! Number of retrieved rows: ${list.size}")
@@ -344,12 +344,12 @@ class DataBaseActions {
         }
     }
 
-    suspend fun deleteAddress(address: Address) : Int {
+    suspend fun deleteAddress(employee: Address) : Int {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try{
-                val data: Address = getAddress(address.cep) ?: throw NullPointerException("There is no such data.")
-                val query: PreparedStatement = db.prepareStatement("DELETE FROM Address WHERE I_cep='${address.cep}';")
+                val data: Address = getAddress(employee.cep) ?: throw NullPointerException("There is no such data.")
+                val query: PreparedStatement = db.prepareStatement("DELETE FROM Address WHERE I_cep='${employee.cep}';")
                 query.execute()
                 rows++
                 println("Query Ok! Number of affected rows: ${rows}.")
@@ -368,7 +368,7 @@ class DataBaseActions {
     }
 
     // EMPLOYEE
-    suspend fun createEmployee(employee: Employee): Int {
+    suspend fun createEmployee(employee: Address): Int {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -400,11 +400,11 @@ class DataBaseActions {
         }
     }
 
-    suspend fun updateEmployee(employee: Employee, newData: Employee): Int {
+    suspend fun updateEmployee(employee: Address, newData: Address): Int {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try{
-                val data: Employee? = getEmployee(employee.name)
+                val data: Address? = getEmployee(employee.name)
 
                 if(data != null && data.name == newData.name) {
 
@@ -435,8 +435,8 @@ class DataBaseActions {
         }
     }
 
-    suspend fun getEmployee(name: String): Employee? {
-        lateinit var employee: Employee
+    suspend fun getEmployee(name: String): Address? {
+        lateinit var employee: Address
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 val query: PreparedStatement =
@@ -445,7 +445,7 @@ class DataBaseActions {
                 res.next()
 
                 if (res.row == 1) {
-                    employee = Employee(
+                    employee = Address(
                         res.getInt("I_ID"),
                         res.getString("STR_name"),
                         res.getString("STR_sex"),
@@ -473,16 +473,16 @@ class DataBaseActions {
         }
     }
 
-    suspend fun getAllEmployee(): ArrayList<Employee> {
-        lateinit var emp: Employee
-        val list: ArrayList<Employee> = ArrayList<Employee>()
+    suspend fun getAllEmployee(): ArrayList<Address> {
+        lateinit var emp: Address
+        val list: ArrayList<Address> = ArrayList<Address>()
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 val query: PreparedStatement = db.prepareStatement("SELECT * FROM Employee;")
                 val res: ResultSet = query.executeQuery()
 
                 while (res.next()) {
-                    emp = Employee(
+                    emp = Address(
                         res.getInt("I_ID"),
                         res.getString("STR_name"),
                         res.getString("STR_sex"),
@@ -510,7 +510,7 @@ class DataBaseActions {
         }
     }
 
-    suspend fun deleteEmployee(employee: Employee): Int {
+    suspend fun deleteEmployee(employee: Address): Int {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -740,12 +740,12 @@ class DataBaseActions {
 
     // CONTRACT EMPLOYEE_PROJECT
 
-    suspend fun createProjectContract(project: Project, employee: Employee): Int {
+    suspend fun createProjectContract(project: Project, employee: Address): Int {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 val projectData: Project? = getProject(project.name)
-                val employeeData: Employee? = getEmployee(employee.name)
+                val employeeData: Address? = getEmployee(employee.name)
 
                 if (projectData != null && employeeData != null) {
                     val query: PreparedStatement =
@@ -899,7 +899,7 @@ class DataBaseActions {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                val employee: Employee? = getEmployee(overseer.empName)
+                val employee: Address? = getEmployee(overseer.empName)
 
                 val query: PreparedStatement =
                     db.prepareStatement("INSERT INTO Overseer (STR_EMP_name, F_wage) VALUES ('${employee?.name}', '${overseer.wage}');")
@@ -1045,4 +1045,7 @@ class DataBaseActions {
             rows
         }
     }
+
 }
+
+ */

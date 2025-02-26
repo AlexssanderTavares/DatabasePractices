@@ -13,10 +13,12 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 
-class AddressAccessor : DataBaseAccessor<Address>{
+class AddressAccessor : AddressAccessorImp{
 
-    private val db: Connection = DataBaseConnection.CONNECTION
-    private val formatter: Formatter = Cep()
+    companion object{
+        private var db: Connection = DataBaseConnection.CONNECTION
+        private val formatter: Formatter = Cep()
+    }
 
     override suspend fun create(model: Address): Int {
         var rows: Int = 0
@@ -102,20 +104,20 @@ class AddressAccessor : DataBaseAccessor<Address>{
     }
 
     override suspend fun get(varchar: String): Address? {
+        lateinit var data: Address
         if(!formatter.isValid(varchar)) {
             throw IllegalArgumentException("${varchar} is not a valid postal code.")
         }
-        lateinit var data: Address
+
 
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                val query: PreparedStatement =
-                    db.prepareStatement("SELECT * FROM Address WHERE I_cep='${varchar}';")
+                val query: PreparedStatement = db.prepareStatement("SELECT * FROM Address WHERE I_cep='${formatter.format(varchar)}';")
                 val res: ResultSet = query.executeQuery()
                 res.next()
 
                 if (res.row == 1) {
-                    data = Address(
+                   data = Address(
                         res.getString("I_cep"),
                         res.getString("STR_road"),
                         res.getString("STR_district"),
@@ -140,7 +142,7 @@ class AddressAccessor : DataBaseAccessor<Address>{
     }
 
     override suspend fun getAll(): ArrayList<Address> {
-        lateinit var address: Address
+        lateinit var employee: Address
         val list: ArrayList<Address> = ArrayList<Address>()
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -148,13 +150,13 @@ class AddressAccessor : DataBaseAccessor<Address>{
                 val res: ResultSet = query.executeQuery()
 
                 while (res.next()) {
-                    address = Address(
+                    employee = Address(
                         res.getString("I_cep"),
                         res.getString("STR_road"),
                         res.getString("STR_district"),
                         res.getString("STR_city")
                     )
-                    list.add(address)
+                    list.add(employee)
                 }
 
                 println("Query OK! Number of retrieved rows: ${list.size}")
@@ -193,5 +195,13 @@ class AddressAccessor : DataBaseAccessor<Address>{
         } else{
             rows
         }
+    }
+
+    override fun turnTestOn(){
+        db = DataBaseConnection.TEST_CONNECTION
+    }
+
+    override fun turnTestOff(){
+        db = DataBaseConnection.CONNECTION
     }
 }

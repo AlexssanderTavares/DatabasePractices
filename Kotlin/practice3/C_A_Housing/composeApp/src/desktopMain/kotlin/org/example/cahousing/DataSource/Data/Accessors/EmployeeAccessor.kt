@@ -7,9 +7,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.example.cahousing.DataBaseConnection
+import org.example.cahousing.DataSource.Data.Accessors.DeptAccessor.Companion
+import org.example.cahousing.DataSource.Models.Address
 import org.example.cahousing.DataSource.Models.Employee
 import org.example.cahousing.DataSource.Models.Overseer
-import org.example.cahousing.DataSource.Models.Project
 import org.example.cahousing.DataSource.Models.ProjectEmployeeContract
 import org.example.cahousing.DataSource.Utilities.Cep
 import org.example.cahousing.DataSource.Utilities.Formatter
@@ -21,11 +22,14 @@ import java.sql.SQLException
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-class EmployeeAccessor : DataBaseAccessor<Employee> {
+class EmployeeAccessor : EmployeeAccessorImp {
 
     companion object {
-        private val db: Connection = DataBaseConnection.CONNECTION
+        private var db: Connection = DataBaseConnection.CONNECTION
         private val formatter: Formatter = Cep()
+        private lateinit var projectAccessor: ProjectAccessorImp
+        private lateinit var contractAccessor: ProjectEmployeeContractAccessorImp
+        private lateinit var overseerAccessor: OverseerAccessorImp
     }
 
     override suspend fun create(model: Employee): Int {
@@ -114,7 +118,7 @@ class EmployeeAccessor : DataBaseAccessor<Employee> {
                         res.getDouble("F_wage"),
                         res.getDate("dt_born_date")?.toString() ?: "0000-00-00",
                         res.getTimestamp("time_worked_journey")?.toString()
-                            ?: "0000-00-00 00:00:00",
+                            ?: "2000-01-01 00:00:00",
                         res.getString("I_ADDRESS_cep"),
                         res.getInt("I_DEPT_num")
                     )
@@ -150,14 +154,13 @@ class EmployeeAccessor : DataBaseAccessor<Employee> {
                         res.getString("STR_name"),
                         res.getString("STR_sex"),
                         res.getDouble("F_wage"),
-                        res.getDate("dt_born_date").toString(),
-                        res.getTimestamp("time_worked_journey").toString(),
+                        res.getDate("dt_born_date")?.toString() ?: "2000-01-01",
+                        res.getTimestamp("time_worked_journey")?.toString() ?: "2000-01-01 00:00:00",
                         res.getString("I_ADDRESS_cep"),
                         res.getInt("I_DEPT_num")
                     )
                     list.add(emp)
                 }
-
                 println("Query OK! Number of retrieved rows: ${list.size}")
             } catch (e: SQLException) {
                 println("Failed to retrieve data due to: ${e.message}")
@@ -188,11 +191,11 @@ class EmployeeAccessor : DataBaseAccessor<Employee> {
                         0
                     } else {
                         val contract = ProjectEmployeeContract(
-                            res1.getInt("id_contract"),
-                            DataBaseAccessorFactory.generate<Project>().get(res1.getString("STR_project"))!!,
-                            get(model.name)!!
+                            id = res1.getInt("id_contract"),
+                            project = projectAccessor.get(res1.getString("STR_project"))!!,
+                            employee = get(res1.getString("STR_employee"))!!
                         )
-                        DataBaseAccessorFactory.generate<ProjectEmployeeContract>().delete(contract)
+                        contractAccessor.delete(contract)
                     }
                 }
                 val task2: Deferred<Int> = async {
@@ -211,7 +214,7 @@ class EmployeeAccessor : DataBaseAccessor<Employee> {
                             res2.getTimestamp("time_worked_journey")?.toString()
                                 ?: "0000-00-00 00:00:00"
                         )
-                        DataBaseAccessorFactory.generate<Overseer>().delete(overseer)
+                        overseerAccessor.delete(overseer)
                     }
 
                 }
@@ -234,5 +237,13 @@ class EmployeeAccessor : DataBaseAccessor<Employee> {
         } else {
             rows
         }
+    }
+
+    override fun turnTestOn(){
+        db = DataBaseConnection.TEST_CONNECTION
+    }
+
+    override fun turnTestOff(){
+        db = DataBaseConnection.CONNECTION
     }
 }

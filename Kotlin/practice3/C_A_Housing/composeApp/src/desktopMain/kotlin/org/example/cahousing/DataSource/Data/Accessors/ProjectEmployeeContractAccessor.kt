@@ -8,24 +8,25 @@ import org.example.cahousing.DataBaseConnection
 import org.example.cahousing.DataSource.Models.Employee
 import org.example.cahousing.DataSource.Models.Project
 import org.example.cahousing.DataSource.Models.ProjectEmployeeContract
-import org.example.cahousing.Factories.DataBaseAccessorFactory
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 
-class ProjectEmployeeContractAccessor: DataBaseAccessor<ProjectEmployeeContract> {
+class ProjectEmployeeContractAccessor: ProjectEmployeeContractAccessorImp {
 
     companion object {
         private val db: Connection = DataBaseConnection.CONNECTION
+        private lateinit var employeeAccessor: EmployeeAccessorImp
+        private lateinit var projectAccessor: ProjectAccessorImp
     }
 
         override suspend fun create(model: ProjectEmployeeContract): Int {
             var rows: Int = 0
             val job: Job = CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    val projectData: Project? = DataBaseAccessorFactory.generate<Project>().get(model.project.name)
-                    val employeeData: Employee? = DataBaseAccessorFactory.generate<Employee>().get(model.employee.name)
+                    val projectData: Project? = projectAccessor.get(model.project.name)
+                    val employeeData: Employee? = employeeAccessor.get(model.employee.name)
 
                     if (projectData != null && employeeData != null) {
                         val query: PreparedStatement =
@@ -91,8 +92,8 @@ class ProjectEmployeeContractAccessor: DataBaseAccessor<ProjectEmployeeContract>
                     if (res.row == 1) {
                         val data: ProjectEmployeeContract = ProjectEmployeeContract(
                             res.getInt("id_contract"),
-                            DataBaseAccessorFactory.generate<Project>().get(res.getString("STR_project"))!!,
-                            DataBaseAccessorFactory.generate<Employee>().get(res.getString("STR_employee"))!!,
+                            projectAccessor.get(res.getString("STR_project"))!!,
+                            employeeAccessor.get(res.getString("STR_employee"))!!,
                             res.getString("STR_description")
                         )
                         _contract = data
@@ -126,8 +127,8 @@ class ProjectEmployeeContractAccessor: DataBaseAccessor<ProjectEmployeeContract>
                     while (res.next()) {
                         contract = ProjectEmployeeContract(
                             res.getInt("id_contract"),
-                            DataBaseAccessorFactory.generate<Project>().get(res.getString("STR_project"))!!,
-                            DataBaseAccessorFactory.generate<Employee>().get(res.getString("STR_employee"))!!
+                            projectAccessor.get(res.getString("STR_project"))!!,
+                            employeeAccessor.get(res.getString("STR_employee"))!!
                         )
 
                         list.add(contract)

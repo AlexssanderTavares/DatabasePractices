@@ -7,16 +7,17 @@ import kotlinx.coroutines.launch
 import org.example.cahousing.DataBaseConnection
 import org.example.cahousing.DataSource.Models.Dept
 import org.example.cahousing.DataSource.Models.Models
+import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 
 
-class DeptAccessor : DataBaseAccessor<Dept> {
-
-    companion object {
-        private val db = DataBaseConnection.CONNECTION
+class DeptAccessor : DeptAccessorImp {
+    companion object{
+        private var db: Connection = DataBaseConnection.CONNECTION
     }
+
     override suspend fun create(model: Dept): Int {
         var rows: Int = 0
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
@@ -177,5 +178,13 @@ class DeptAccessor : DataBaseAccessor<Dept> {
         } else {
             list
         }
+    }
+
+    override fun turnTestOn(){
+        db = DataBaseConnection.TEST_CONNECTION
+    }
+
+    override fun turnTestOff(){
+        db = DataBaseConnection.CONNECTION
     }
 }

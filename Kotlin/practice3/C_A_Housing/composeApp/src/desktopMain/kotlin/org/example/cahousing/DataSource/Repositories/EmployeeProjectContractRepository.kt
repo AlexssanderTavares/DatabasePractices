@@ -1,8 +1,9 @@
 package org.example.cahousing.DataSource.Repositories
 
-import org.example.cahousing.DataSource.Data.DataBaseActions
+
 import org.example.cahousing.DataSource.Models.ProjectEmployeeContract
 
+/*
 class EmployeeProjectContractRepository : Repository<ProjectEmployeeContract> {
 
     companion object{
@@ -27,6 +28,8 @@ class EmployeeProjectContractRepository : Repository<ProjectEmployeeContract> {
 
     override suspend fun delete(model: ProjectEmployeeContract): Int {
         return db.deleteProjectContract(model)
+
     }
 
 }
+*/

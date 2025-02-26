@@ -7,7 +7,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.example.cahousing.DataBaseConnection
-import org.example.cahousing.DataSource.Models.Employee
+import org.example.cahousing.DataSource.Models.Address
 import org.example.cahousing.DataSource.Models.Project
 import org.example.cahousing.DataSource.Models.ProjectEmployeeContract
 import org.example.cahousing.Factories.DataBaseAccessorFactory
@@ -16,10 +16,12 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 
-class ProjectAccessor : DataBaseAccessor<Project> {
+class ProjectAccessor : ProjectAccessorImp {
 
     companion object {
         private val db: Connection = DataBaseConnection.CONNECTION
+        private lateinit var employeeAccessor: EmployeeAccessorImp
+        private lateinit var contractAccessor: ProjectEmployeeContractAccessorImp
     }
 
     override suspend fun create(model: Project): Int {
@@ -183,10 +185,9 @@ class ProjectAccessor : DataBaseAccessor<Project> {
                         val contract: ProjectEmployeeContract = ProjectEmployeeContract(
                             res2.getInt("id_contract"),
                             get(res2.getString(model.name))!!,
-                            DataBaseAccessorFactory.generate<Employee>()
-                                .get(res2.getString("STR_employee"))!!
+                            employeeAccessor.get(res2.getString("STR_employee"))!!
                         )
-                        DataBaseAccessorFactory.generate<ProjectEmployeeContract>().delete(contract)
+                        contractAccessor.delete(contract)
                     }
                 }
 

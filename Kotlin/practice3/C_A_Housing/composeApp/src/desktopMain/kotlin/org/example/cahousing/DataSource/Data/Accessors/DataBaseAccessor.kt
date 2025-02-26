@@ -1,16 +1,16 @@
 package org.example.cahousing.DataSource.Data.Accessors
 
 import org.example.cahousing.DataSource.Models.Models
+//TODO("Should be deleted soon")
+interface DataBaseAccessor {
 
-interface DataBaseAccessor<T : Models> {
+   /* suspend fun create(model: Models) : Int
 
-    suspend fun create(model: T) : Int
+    suspend fun update(model: Models, data: Models) : Int
 
-    suspend fun update(model: T, data: T) : Int
+    suspend fun get(varchar: String) : Models?
 
-    suspend fun get(varchar: String) : T?
+    suspend fun getAll() : ArrayList<Models>
 
-    suspend fun getAll() : ArrayList<T>
-
-    suspend fun delete(model: T) : Int
+    suspend fun delete(model: Models) : Int*/
 }
