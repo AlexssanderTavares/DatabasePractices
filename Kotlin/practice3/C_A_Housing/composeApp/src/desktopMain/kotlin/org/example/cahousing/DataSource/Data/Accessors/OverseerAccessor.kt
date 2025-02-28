@@ -17,17 +17,18 @@ import java.sql.SQLException
 class OverseerAccessor: OverseerAccessorImp {
 
     companion object {
-        private val db: Connection = DataBaseConnection.CONNECTION
-        private lateinit var employeeAccessor: EmployeeAccessorImp
+        private var db: Connection = DataBaseConnection.CONNECTION
+        private var employeeAccessor: EmployeeAccessorImp = EmployeeAccessor()
     }
-        override suspend fun create(model: Overseer): Int {
+
+    override suspend fun create(model: Overseer): Int {
             var rows: Int = 0
             val job: Job = CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val employee: Employee? = employeeAccessor.get(model.empName)
 
                     val query: PreparedStatement =
-                        db.prepareStatement("INSERT INTO Overseer (STR_EMP_name, F_wage) VALUES ('${employee?.name}', '${model.wage}');")
+                        db.prepareStatement("INSERT INTO Overseer (STR_EMP_name, F_wage, time_worked_journey) VALUES ('${employee?.name}', '${model.wage}', '${model.timeWorked}');")
                     query.execute()
                     rows++
                     println("Query OK! Number of affected rows: ${rows}")
@@ -46,7 +47,7 @@ class OverseerAccessor: OverseerAccessorImp {
             }
         }
 
-       override suspend fun update(model: Overseer, data: Overseer) : Int{
+    override suspend fun update(model: Overseer, data: Overseer) : Int{
             var rows: Int = 0
             val job: Job = CoroutineScope(Dispatchers.IO).launch {
                 try{
@@ -58,9 +59,9 @@ class OverseerAccessor: OverseerAccessorImp {
                             query.execute()
                         }
 
-                        if(oldData.timeWorked != data.timeWorked){
+                        if(oldData.timeWorked != data.timeWorked || oldData.timeWorked == null){
                             val query: PreparedStatement =
-                                db.prepareStatement("UPDATE Overseer SET time_worked_journey='${data.timeWorked}' WHERE time_worked_journey='${oldData.timeWorked}'")
+                                db.prepareStatement("UPDATE Overseer SET time_worked_journey='${data.timeWorked}' WHERE time_worked_journey='${oldData.timeWorked}';")
                             query.execute()
                         }
                         rows++
@@ -83,7 +84,7 @@ class OverseerAccessor: OverseerAccessorImp {
             }
        }
 
-       override suspend fun get(varchar: String): Overseer? {
+    override suspend fun get(varchar: String): Overseer? {
             lateinit var _overseer: Overseer
             val job: Job = CoroutineScope(Dispatchers.IO).launch {
                 try {
@@ -96,7 +97,7 @@ class OverseerAccessor: OverseerAccessorImp {
                         res.getInt("I_id"),
                         res.getString("STR_EMP_name"),
                         res.getDouble("F_wage"),
-                        res.getTimestamp("time_worked_journey")?.toString() ?: "0000-00-00 00:00:00"
+                        res.getTimestamp("time_worked_journey")?.toString() ?: "2000-01-01 00:00:00"
                     )
                     println("Query OK! Object returned: ${_overseer}")
                 } catch (e: SQLException) {
@@ -114,7 +115,7 @@ class OverseerAccessor: OverseerAccessorImp {
             }
        }
 
-        override suspend fun getAll(): ArrayList<Overseer> {
+    override suspend fun getAll(): ArrayList<Overseer> {
             lateinit var overseer: Overseer
             val list: ArrayList<Overseer> = ArrayList<Overseer>()
             val job: Job = CoroutineScope(Dispatchers.IO).launch {
@@ -147,7 +148,7 @@ class OverseerAccessor: OverseerAccessorImp {
             }
         }
 
-       override suspend fun delete(model: Overseer): Int {
+    override suspend fun delete(model: Overseer): Int {
             var rows: Int = 0
             val job: Job = CoroutineScope(Dispatchers.IO).launch {
                 try {
@@ -170,4 +171,12 @@ class OverseerAccessor: OverseerAccessorImp {
                 rows
             }
        }
+
+    override fun turnTestOn() {
+        db = DataBaseConnection.TEST_CONNECTION
+    }
+
+    override fun turnTestOff() {
+        db = DataBaseConnection.CONNECTION
+    }
 }

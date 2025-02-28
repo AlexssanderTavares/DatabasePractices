@@ -12,4 +12,8 @@ interface OverseerAccessorImp {
     suspend fun getAll() : ArrayList<Overseer>
 
     suspend fun delete(model: Overseer) : Int
+
+    fun turnTestOn()
+
+    fun turnTestOff()
 }

@@ -19,7 +19,7 @@ import java.sql.SQLException
 class ProjectAccessor : ProjectAccessorImp {
 
     companion object {
-        private val db: Connection = DataBaseConnection.CONNECTION
+        private var db: Connection = DataBaseConnection.CONNECTION
         private lateinit var employeeAccessor: EmployeeAccessorImp
         private lateinit var contractAccessor: ProjectEmployeeContractAccessorImp
     }
@@ -208,6 +208,14 @@ class ProjectAccessor : ProjectAccessorImp {
         } else {
             rows
         }
+    }
+
+    override fun turnTestOn() {
+        db = DataBaseConnection.TEST_CONNECTION
+    }
+
+    override fun turnTestOff() {
+        db = DataBaseConnection.CONNECTION
     }
 
 }

@@ -16,12 +16,12 @@ import java.sql.SQLException
 class ProjectEmployeeContractAccessor: ProjectEmployeeContractAccessorImp {
 
     companion object {
-        private val db: Connection = DataBaseConnection.CONNECTION
-        private lateinit var employeeAccessor: EmployeeAccessorImp
-        private lateinit var projectAccessor: ProjectAccessorImp
+        private var db: Connection = DataBaseConnection.CONNECTION
+        private val employeeAccessor: EmployeeAccessorImp = EmployeeAccessor()
+        private val projectAccessor: ProjectAccessorImp = ProjectAccessor()
     }
 
-        override suspend fun create(model: ProjectEmployeeContract): Int {
+    override suspend fun create(model: ProjectEmployeeContract): Int {
             var rows: Int = 0
             val job: Job = CoroutineScope(Dispatchers.IO).launch {
                 try {
@@ -30,7 +30,7 @@ class ProjectEmployeeContractAccessor: ProjectEmployeeContractAccessorImp {
 
                     if (projectData != null && employeeData != null) {
                         val query: PreparedStatement =
-                            db.prepareStatement("INSERT INTO Employee_Project (STR_project, STR_employee) VALUES ('${projectData.name}', '${employeeData.name}');")
+                            db.prepareStatement("INSERT INTO Employee_Project (STR_project, STR_employee, STR_description) VALUES ('${projectData.name}', '${employeeData.name}', '${model.description}');")
                         query.execute()
                         rows++
                         println("Query ok! Number of affected rows: ${rows}")
@@ -56,7 +56,7 @@ class ProjectEmployeeContractAccessor: ProjectEmployeeContractAccessorImp {
             }
         }
 
-        override suspend fun update(model: ProjectEmployeeContract, data: ProjectEmployeeContract) : Int {
+    override suspend fun update(model: ProjectEmployeeContract, data: ProjectEmployeeContract) : Int {
             var rows: Int = 0
             val job: Job = CoroutineScope(Dispatchers.IO).launch {
                 try{
@@ -81,7 +81,7 @@ class ProjectEmployeeContractAccessor: ProjectEmployeeContractAccessorImp {
             }
         }
 
-        override suspend fun get(varchar: String): ProjectEmployeeContract? {
+    override suspend fun get(varchar: String): ProjectEmployeeContract? {
             var _contract: ProjectEmployeeContract? = null
             val job: Job = CoroutineScope(Dispatchers.IO).launch {
                 try {
@@ -114,7 +114,7 @@ class ProjectEmployeeContractAccessor: ProjectEmployeeContractAccessorImp {
             }
         }
 
-        override suspend fun getAll(): ArrayList<ProjectEmployeeContract> {
+    override suspend fun getAll(): ArrayList<ProjectEmployeeContract> {
             lateinit var contract: ProjectEmployeeContract
             val list: ArrayList<ProjectEmployeeContract> = ArrayList<ProjectEmployeeContract>()
             val job: Job = CoroutineScope(Dispatchers.IO).launch {
@@ -149,7 +149,7 @@ class ProjectEmployeeContractAccessor: ProjectEmployeeContractAccessorImp {
             }
         }
 
-        override suspend fun delete(model: ProjectEmployeeContract): Int {
+    override suspend fun delete(model: ProjectEmployeeContract): Int {
             var rows: Int = 0
             val job: Job = CoroutineScope(Dispatchers.IO).launch {
                 try {
@@ -173,5 +173,13 @@ class ProjectEmployeeContractAccessor: ProjectEmployeeContractAccessorImp {
                 rows
             }
         }
+
+    override fun turnTestOn() {
+        db = DataBaseConnection.TEST_CONNECTION
+    }
+
+    override fun turnTestOff() {
+        db = DataBaseConnection.CONNECTION
+    }
     
 }

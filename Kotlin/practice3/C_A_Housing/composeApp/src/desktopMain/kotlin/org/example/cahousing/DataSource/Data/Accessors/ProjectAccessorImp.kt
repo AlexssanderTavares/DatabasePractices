@@ -12,4 +12,8 @@ interface ProjectAccessorImp {
     suspend fun getAll() : ArrayList<Project>
 
     suspend fun delete(model: Project) : Int
+
+    fun turnTestOn()
+
+    fun turnTestOff()
 }

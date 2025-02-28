@@ -12,4 +12,8 @@ interface ProjectEmployeeContractAccessorImp{
     suspend fun getAll() : ArrayList<ProjectEmployeeContract>
 
     suspend fun delete(model: ProjectEmployeeContract) : Int
+
+    fun turnTestOn()
+
+    fun turnTestOff()
 }
