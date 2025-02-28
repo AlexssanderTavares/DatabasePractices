@@ -2,7 +2,6 @@ package org.example.cahousing.Factories
 
 import org.example.cahousing.DataSource.Data.Accessors.AddressAccessor
 import org.example.cahousing.DataSource.Data.Accessors.AddressAccessorImp
-import org.example.cahousing.DataSource.Data.Accessors.DataBaseAccessor
 import org.example.cahousing.DataSource.Data.Accessors.DeptAccessor
 import org.example.cahousing.DataSource.Data.Accessors.DeptAccessorImp
 import org.example.cahousing.DataSource.Data.Accessors.EmployeeAccessor

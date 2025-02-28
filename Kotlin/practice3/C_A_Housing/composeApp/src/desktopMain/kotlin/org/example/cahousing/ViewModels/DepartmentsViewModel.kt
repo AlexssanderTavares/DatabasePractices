@@ -2,28 +2,24 @@ package org.example.cahousing.ViewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.example.cahousing.DataSource.Data.Accessors.DeptAccessor
+import org.example.cahousing.DataSource.Data.Accessors.DeptAccessorImp
 import org.example.cahousing.DataSource.Models.Dept
-import org.example.cahousing.DataSource.Models.Models
-import org.example.cahousing.DataSource.Repositories.Repository
 
 
 class DepartmentsViewModel : ViewModel() {
 
     init{
-        //getDeptList()
+        getDeptList()
     }
 
-    private lateinit var repo: Repository<Dept>
+    private val repo: DeptAccessorImp = DeptAccessor()
 
     // List mutable state
     private val _deptList: MutableStateFlow<ArrayList<Dept>> = MutableStateFlow(arrayListOf())
@@ -51,12 +47,11 @@ class DepartmentsViewModel : ViewModel() {
             _creationResult.update { repo.create(dept) }
             println("Creation Successful!")
             println("Process result: ${creationResult.value}")
-          //  getDeptList()
+            getDeptList()
         }
     }
 
-    /*fun getDept(name: String) {
-        repo = DeptRepository()
+    fun getDept(name: String) {
         viewModelScope.launch(Dispatchers.IO) {
             println("Trying to get department with that name...")
             _getResult.update { repo.get(name) }
@@ -66,7 +61,6 @@ class DepartmentsViewModel : ViewModel() {
     }
 
     fun getDeptList(){
-        repo = DeptRepository()
         viewModelScope.launch(Dispatchers.IO) {
             println("Getting Departments list")
             _deptList.update { repo.getAll() }
@@ -77,7 +71,6 @@ class DepartmentsViewModel : ViewModel() {
     }
 
     fun update(dept: Dept, data: Dept) {
-        repo = DeptRepository()
         viewModelScope.launch(Dispatchers.IO) {
             println("Updating ${dept.name}...")
             if(dept.name != data.name) {
@@ -95,7 +88,6 @@ class DepartmentsViewModel : ViewModel() {
     }
 
     fun delete(dept: Dept) {
-        repo = DeptRepository()
         viewModelScope.launch(Dispatchers.IO) {
             println("Deleting ${dept}")
             _deleteResult.update { repo.delete(dept) }
@@ -109,6 +101,6 @@ class DepartmentsViewModel : ViewModel() {
             }
             getDeptList()
         }
-    }*/
+    }
 
 }
