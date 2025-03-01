@@ -5,4 +5,4 @@ data class ProjectEmployeeContract(
     val project: Project,
     val employee: Employee,
     var description: String = ""
-) : Models
+)

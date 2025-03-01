@@ -1,7 +1,6 @@
 package org.example.cahousing.DataSource.Data.Accessors
 
 import org.example.cahousing.DataSource.Models.Address
-import org.example.cahousing.DataSource.Models.Models
 
 interface AddressAccessorImp {
     suspend fun create(model: Address) : Int

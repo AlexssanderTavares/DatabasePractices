@@ -9,4 +9,4 @@ data class Employee(
     var timeWorked: String?,
     var address: String,
     var idDept: Int = 0
-) : Models
+)

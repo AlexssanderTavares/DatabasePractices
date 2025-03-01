@@ -5,6 +5,7 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.shrinkOut
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +28,8 @@ import androidx.compose.ui.unit.dp
 @Preview
 fun App() {
     var displayDepartments: Boolean by remember { mutableStateOf(false) }
+    var displayProjects: Boolean by remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier.fillMaxWidth().fillMaxHeight(),
         horizontalArrangement = Arrangement.SpaceBetween
@@ -78,6 +81,7 @@ fun App() {
                                     displayDepartments = false
                                 } else{
                                     displayDepartments = true
+                                    displayProjects = false
                                 }
                             }
                         ) {
@@ -90,6 +94,7 @@ fun App() {
                             modifier = Modifier.fillMaxWidth(),
                             onClick = {
                                 displayDepartments = false
+                                displayProjects = true
                             }
                         ) {
                             Text(text = "Projects")
@@ -139,10 +144,21 @@ fun App() {
         ) {
             AnimatedVisibility(
                 visible = displayDepartments,
-                exit = fadeOut() + shrinkHorizontally()
+                enter = fadeIn() + expandHorizontally(),
+                exit = fadeOut() + shrinkOut()
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     DepartmentsView(displayDepartments)
+                }
+            }
+
+            AnimatedVisibility(
+                visible = displayProjects,
+                enter = fadeIn() + expandHorizontally(),
+                exit = fadeOut() + shrinkOut()
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    ProjectView(displayProjects)
                 }
             }
         }

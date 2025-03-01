@@ -39,23 +39,23 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.example.cahousing.DataSource.Models.Dept
 import org.example.cahousing.DataSource.Models.Project
-import org.example.cahousing.ViewModels.DeptViewModel
+import org.example.cahousing.ViewModels.ProjectViewModel
 import java.sql.SQLException
 
 @Composable
-fun DepartmentsView(visible: Boolean) {
-    val deptViewModel: DeptViewModel = viewModel()
-    val updatedList: ArrayList<Dept> by deptViewModel.getList.collectAsState()
-    var dept: Dept? by remember { mutableStateOf(null) }
-    var newDeptName: String by remember { mutableStateOf("") }
-    var newDeptDescription: String by remember { mutableStateOf("") }
+fun ProjectView(visible: Boolean) {
+    val projectViewModel: ProjectViewModel = viewModel()
+    val updatedList: ArrayList<Project> by projectViewModel.getList.collectAsState()
+    var project: Project? by remember { mutableStateOf(null) }
+    var newProjectName: String by remember { mutableStateOf("") }
+    var newProjectDeptNumber: Int by remember { mutableStateOf(0) }
     var displayErrorDialog: Boolean by remember { mutableStateOf(false) }
     var errorMessage: String by remember { mutableStateOf("") }
     var displayUIToast: Boolean by remember { mutableStateOf(false) }
     var toastMessage: String by remember { mutableStateOf("") }
     var invalidText: Boolean by remember { mutableStateOf(false) }
 
-    deptViewModel.getList()
+    projectViewModel.getList()
 
     AnimatedVisibility(
         visible = visible
@@ -73,20 +73,20 @@ fun DepartmentsView(visible: Boolean) {
             ) {
                 OutlinedTextField(
                     modifier = Modifier.width(400.dp) ,
-                    value = newDeptName,
+                    value = newProjectName,
                     isError = invalidText,
-                    onValueChange = { newDeptName = it },
-                    label = { Text(text = "New Department Name: ") }
+                    onValueChange = { newProjectName = it },
+                    label = { Text(text = "New Project Name: ") }
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 OutlinedTextField(
                     modifier = Modifier.width(400.dp).height(250.dp),
-                    value = newDeptDescription,
+                    value = newProjectDeptNumber.toString(),
                     isError = invalidText,
-                    onValueChange = { newDeptDescription = it },
-                    label = { Text(text = "New Department Description: ") }
+                    onValueChange = { newProjectDeptNumber = it.toInt() },
+                    label = { Text(text = "New Project Department Number: ") }
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -99,21 +99,21 @@ fun DepartmentsView(visible: Boolean) {
                         modifier = Modifier.padding(8.dp),
                         onClick = {
                             try {
-                                dept = Dept(name = newDeptName, description = newDeptDescription)
-                                deptViewModel.get(dept!!.name)
-                                if (deptViewModel.getResult.value == null) {
-                                    deptViewModel.create(dept!!)
+                                project = Project(name = newProjectName, dept = newProjectDeptNumber)
+                                projectViewModel.get(project!!.name)
+                                if (projectViewModel.getResult.value == null) {
+                                    projectViewModel.create(project!!)
                                     displayUIToast = true
                                     invalidText = false
                                     toastMessage = "Data Creation Success!!"
-                                    newDeptName = ""
-                                    newDeptDescription = ""
+                                    newProjectName = ""
+                                    newProjectDeptNumber = 0
                                 } else {
                                     displayUIToast = true
                                     invalidText = true
                                     toastMessage = "Data Already Exists!!!"
-                                    newDeptName = ""
-                                    newDeptDescription = ""
+                                    newProjectName = ""
+                                    newProjectDeptNumber = 0
                                 }
 
                             } catch (e: SQLException) {
@@ -128,14 +128,14 @@ fun DepartmentsView(visible: Boolean) {
                         modifier = Modifier.padding(8.dp),
                         onClick = {
                             try {
-                                dept = Dept(name = newDeptName, description = newDeptDescription)
-                                if (dept?.name != deptViewModel.getResult.value?.name || dept?.description != deptViewModel.getResult.value?.description) {
-                                    deptViewModel.update(deptViewModel.getResult.value!!, dept!!)
+                                project = Project(name = newProjectName, dept = newProjectDeptNumber)
+                                if (project?.name != projectViewModel.getResult.value?.name || project?.dept != projectViewModel.getResult.value?.dept) {
+                                    projectViewModel.update(projectViewModel.getResult.value!!, project!!)
                                     displayUIToast = true
                                     invalidText = false
                                     toastMessage = "Data Update Success!!"
-                                    newDeptName = ""
-                                    newDeptDescription = ""
+                                    newProjectName = ""
+                                    newProjectDeptNumber = 0
                                 }
                             } catch (e: SQLException) {
                                 invalidText = true
@@ -152,15 +152,15 @@ fun DepartmentsView(visible: Boolean) {
                         modifier = Modifier.padding(8.dp),
                         onClick = {
                             try {
-                                dept = deptViewModel.getResult.value!!
-                                deptViewModel.delete(dept!!)
+                                project = projectViewModel.getResult.value!!
+                                projectViewModel.delete(project!!)
 
-                                if (deptViewModel.deleteResult.value >= 1) {
+                                if (projectViewModel.deleteResult.value >= 1) {
                                     displayUIToast = true
                                     invalidText = false
                                     toastMessage = "Data Deletion Success!!!"
-                                    newDeptName = ""
-                                    newDeptDescription = ""
+                                    newProjectName = ""
+                                    newProjectDeptNumber = 0
                                 }
                             } catch (e: SQLException) {
                                 displayErrorDialog = true
@@ -187,16 +187,16 @@ fun DepartmentsView(visible: Boolean) {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        DeptItem(
+                        ProjectItem(
                             modifier = Modifier.border(
                                 4.dp, Color.Black, shape = RoundedCornerShape(8.dp)
                             ).padding(4.dp).background(Color.White).height(56.dp).fillMaxWidth()
                                 .clickable {
-                                    newDeptName = it.name
-                                    newDeptDescription = it.description
-                                    deptViewModel.get(it.name)
+                                    newProjectName = it.name
+                                    newProjectDeptNumber = it.dept
+                                    projectViewModel.get(it.name)
                                 }.animateEnterExit(enter = fadeIn() + expandVertically(), exit = fadeOut() + shrinkHorizontally()),
-                            dept = it
+                            project = it
                         )
                     }
                 })
@@ -215,7 +215,7 @@ fun DepartmentsView(visible: Boolean) {
 }
 
 @Composable
-fun DeptItem(dept: Dept, modifier: Modifier) {
+fun ProjectItem(project: Project, modifier: Modifier) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -223,7 +223,7 @@ fun DeptItem(dept: Dept, modifier: Modifier) {
     ) {
         Text(
             modifier = Modifier.padding(start = 8.dp),
-            text = "Department: ${dept.name}",
+            text = "Project: ${project.name}",
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )
@@ -231,21 +231,11 @@ fun DeptItem(dept: Dept, modifier: Modifier) {
         Spacer(modifier = Modifier.width(18.dp))
 
         Text(
-            text = "Number: ${dept.id}",
+            text = "Project Department: ${project.dept}",
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )
 
         Spacer(modifier = Modifier.width(18.dp))
-
-        Text(
-            text = "Description: ${dept.description}",
-            fontWeight = FontWeight.Bold,
-            fontSize = 14.sp
-        )
-
-        Spacer(modifier = Modifier.width(18.dp))
-
-
     }
 }

@@ -13,88 +13,84 @@ import org.example.cahousing.DataSource.Data.Accessors.DeptAccessorImp
 import org.example.cahousing.DataSource.Models.Dept
 
 
-class DepartmentsViewModel : ViewModel() {
+class DeptViewModel: ViewModel(){
 
     private val repo: DeptAccessorImp = DeptAccessor()
 
-    // List mutable state
-    private val _deptList: MutableStateFlow<ArrayList<Dept>> = MutableStateFlow(arrayListOf())
-    val deptList: StateFlow<ArrayList<Dept>> = _deptList.asStateFlow()
+    val _createResult: MutableStateFlow<Int> = MutableStateFlow(0)
+    val createResult: StateFlow<Int> = _createResult.asStateFlow()
 
-    // Mutable return value of new dept creation
-    private val _creationResult: MutableStateFlow<Int> = MutableStateFlow(0)
-    val creationResult: StateFlow<Int> = _creationResult.asStateFlow()
+    val _getList: MutableStateFlow<ArrayList<Dept>> = MutableStateFlow(arrayListOf())
+    val getList: StateFlow<ArrayList<Dept>> = _getList.asStateFlow()
 
-    // Get and Set dept caught by get method
-    private val _getResult: MutableStateFlow<Dept?> = MutableStateFlow(null)
+    val _getResult: MutableStateFlow<Dept?> = MutableStateFlow(null)
     val getResult: StateFlow<Dept?> = _getResult.asStateFlow()
 
-    // Update method must be called from UI and change updateResult value
-    private val _updateResult: MutableStateFlow<Int> = MutableStateFlow(0)
+    val _updateResult: MutableStateFlow<Int> = MutableStateFlow(0)
     val updateResult: StateFlow<Int> = _updateResult.asStateFlow()
 
-    private val _deleteResult: MutableStateFlow<Int> = MutableStateFlow(0)
+    val _deleteResult: MutableStateFlow<Int> = MutableStateFlow(0)
     val deleteResult: StateFlow<Int> = _deleteResult.asStateFlow()
 
-    fun create(dept: Dept) {
+    fun create(model: Dept) {
         viewModelScope.launch(Dispatchers.IO) {
-            println("Creating ${dept.name}")
-            _creationResult.update { repo.create(dept) }
+            println("Creating ${model.name}")
+            _createResult.update { repo.create(model) }
             println("Creation Successful!")
-            println("Process result: ${creationResult.value}")
-            getDeptList()
+            println("Process result: ${createResult.value}")
+            getList()
         }
     }
 
-    fun getDept(name: String) {
+    fun get(varchar: String) {
         viewModelScope.launch(Dispatchers.IO) {
             println("Trying to get department with that name...")
-            _getResult.update { repo.get(name) }
+            _getResult.update { repo.get(varchar) }
             println("Success getting Department!!!")
             println("Department found: ${getResult.value}")
         }
     }
 
-    fun getDeptList(){
+    fun getList(){
         viewModelScope.launch(Dispatchers.IO) {
             println("Getting Departments list")
-            _deptList.update { repo.getAll() }
-            deptList.value.forEach {
+            _getList.update { repo.getAll() }
+            getList.value.forEach {
                 println(it)
             }
         }
     }
 
-    fun update(dept: Dept, data: Dept) {
+    fun update(model: Dept, data: Dept) {
         viewModelScope.launch(Dispatchers.IO) {
-            println("Updating ${dept.name}...")
-            if(dept.name != data.name) {
-                println("${dept.name} to ${data.name}")
+            println("Updating ${model.name}...")
+            if(model.name != data.name) {
+                println("${model.name} to ${data.name}")
             }
-            if(dept.description != data.description){
-                println("${dept.description} to ${data.description}")
+            if(model.description != data.description){
+                println("${model.description} to ${data.description}")
             }
-            _updateResult.value = repo.update(dept, data)
+            _updateResult.value = repo.update(model, data)
             if(updateResult.value > 0){
                 println("Number of updates: ${updateResult.value}")
             }
-            getDeptList()
+            getList()
         }
     }
 
-    fun delete(dept: Dept) {
+    fun delete(model: Dept) {
         viewModelScope.launch(Dispatchers.IO) {
-            println("Deleting ${dept}")
-            _deleteResult.update { repo.delete(dept) }
-            _deptList.update {
-                it.remove(dept)
+            println("Deleting ${model}")
+            _deleteResult.update { repo.delete(model) }
+            _getList.update {
+                it.remove(model)
                 it
             }
             if(deleteResult.value > 0) {
                 println("Data deleted successfully.")
                 println("Number of deletions: ${deleteResult.value}")
             }
-            getDeptList()
+            getList()
         }
     }
 

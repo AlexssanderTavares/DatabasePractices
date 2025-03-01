@@ -5,4 +5,4 @@ data class Address(
     val road: String,
     val district: String,
     val city: String
-) : Models
+)

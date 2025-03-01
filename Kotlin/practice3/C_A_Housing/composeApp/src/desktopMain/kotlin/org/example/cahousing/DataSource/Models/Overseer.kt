@@ -8,4 +8,4 @@ data class Overseer(
     val empName: String,
     var wage: Double,
     var timeWorked: String? = null
-) : Models
+)

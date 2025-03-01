@@ -6,7 +6,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.example.cahousing.DataBaseConnection
 import org.example.cahousing.DataSource.Models.Dept
-import org.example.cahousing.DataSource.Models.Models
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
