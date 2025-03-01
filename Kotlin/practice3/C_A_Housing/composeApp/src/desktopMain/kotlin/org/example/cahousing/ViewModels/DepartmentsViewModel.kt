@@ -15,10 +15,6 @@ import org.example.cahousing.DataSource.Models.Dept
 
 class DepartmentsViewModel : ViewModel() {
 
-    init{
-        getDeptList()
-    }
-
     private val repo: DeptAccessorImp = DeptAccessor()
 
     // List mutable state
@@ -41,7 +37,6 @@ class DepartmentsViewModel : ViewModel() {
     val deleteResult: StateFlow<Int> = _deleteResult.asStateFlow()
 
     fun create(dept: Dept) {
-        //repo = DeptRepository()
         viewModelScope.launch(Dispatchers.IO) {
             println("Creating ${dept.name}")
             _creationResult.update { repo.create(dept) }

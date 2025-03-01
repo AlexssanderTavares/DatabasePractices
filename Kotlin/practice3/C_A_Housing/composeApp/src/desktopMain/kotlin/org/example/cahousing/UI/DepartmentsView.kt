@@ -33,15 +33,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.example.cahousing.DataSource.Models.Dept
 import org.example.cahousing.ViewModels.DepartmentsViewModel
 import java.sql.SQLException
@@ -59,6 +54,7 @@ fun DepartmentsView(visible: Boolean) {
     var toastMessage: String by remember { mutableStateOf("") }
     var invalidText: Boolean by remember { mutableStateOf(false) }
 
+    deptViewModel.getDeptList()
 
     AnimatedVisibility(
         visible = visible
@@ -103,7 +99,7 @@ fun DepartmentsView(visible: Boolean) {
                         onClick = {
                             try {
                                 dept = Dept(name = newDeptName, description = newDeptDescription)
-                               // deptViewModel.getDept(dept!!.name)
+                                deptViewModel.getDept(dept!!.name)
                                 if (deptViewModel.getResult.value == null) {
                                     deptViewModel.create(dept!!)
                                     displayUIToast = true
@@ -133,7 +129,7 @@ fun DepartmentsView(visible: Boolean) {
                             try {
                                 dept = Dept(name = newDeptName, description = newDeptDescription)
                                 if (dept?.name != deptViewModel.getResult.value?.name || dept?.description != deptViewModel.getResult.value?.description) {
-                                  //  deptViewModel.update(deptViewModel.getResult.value!!, dept!!)
+                                    deptViewModel.update(deptViewModel.getResult.value!!, dept!!)
                                     displayUIToast = true
                                     invalidText = false
                                     toastMessage = "Data Update Success!!"
@@ -156,7 +152,7 @@ fun DepartmentsView(visible: Boolean) {
                         onClick = {
                             try {
                                 dept = deptViewModel.getResult.value!!
-                              //  deptViewModel.delete(dept!!)
+                                deptViewModel.delete(dept!!)
 
                                 if (deptViewModel.deleteResult.value >= 1) {
                                     displayUIToast = true
@@ -197,7 +193,7 @@ fun DepartmentsView(visible: Boolean) {
                                 .clickable {
                                     newDeptName = it.name
                                     newDeptDescription = it.description
-                                 //   deptViewModel.getDept(it.name)
+                                    deptViewModel.getDept(it.name)
                                 }.animateEnterExit(enter = fadeIn() + expandVertically(), exit = fadeOut() + shrinkHorizontally()),
                             dept = it
                         )
