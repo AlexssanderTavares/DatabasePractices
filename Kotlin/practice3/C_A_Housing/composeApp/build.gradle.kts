@@ -24,7 +24,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation("com.mysql:mysql-connector-j:9.1.0")
             implementation("io.github.cdimascio:dotenv-kotlin:6.4.2")
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core: 2.0.0")
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core: 2.1.0")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android: 1.3.9")
             implementation("org.jetbrains.compose.ui:ui-tooling-preview: 1.4.1")
             implementation("org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose:2.8.2")

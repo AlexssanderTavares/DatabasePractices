@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 fun App() {
     var displayDepartments: Boolean by remember { mutableStateOf(false) }
     var displayProjects: Boolean by remember { mutableStateOf(false) }
+    var displayEmployees: Boolean by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier.fillMaxWidth().fillMaxHeight(),
@@ -77,12 +78,10 @@ fun App() {
                         Button(
                             modifier = Modifier.fillMaxWidth(),
                             onClick = {
-                                if(displayDepartments){
-                                    displayDepartments = false
-                                } else{
-                                    displayDepartments = true
-                                    displayProjects = false
-                                }
+                                displayEmployees = false
+                                displayProjects = false
+                                displayDepartments = true
+
                             }
                         ) {
                             Text(text = "Departments")
@@ -94,6 +93,7 @@ fun App() {
                             modifier = Modifier.fillMaxWidth(),
                             onClick = {
                                 displayDepartments = false
+                                displayEmployees = false
                                 displayProjects = true
                             }
                         ) {
@@ -106,7 +106,8 @@ fun App() {
                             modifier = Modifier.fillMaxWidth(),
                             onClick = {
                                 displayDepartments = false
-
+                                displayProjects = false
+                                displayEmployees = true
                             }
                         ) {
                             Text(text = "Employees")
@@ -159,6 +160,16 @@ fun App() {
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     ProjectView(displayProjects)
+                }
+            }
+
+            AnimatedVisibility(
+                visible = displayEmployees,
+                enter = fadeIn() + expandHorizontally(),
+                exit = fadeOut() + shrinkOut()
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    EmployeesView(displayEmployees)
                 }
             }
         }

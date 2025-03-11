@@ -93,12 +93,15 @@ class OverseerAccessor: OverseerAccessorImp {
                     val res: ResultSet = query.executeQuery()
                     res.next()
 
-                    _overseer = Overseer(
-                        res.getInt("I_id"),
-                        res.getString("STR_EMP_name"),
-                        res.getDouble("F_wage"),
-                        res.getTimestamp("time_worked_journey")?.toString() ?: "2000-01-01 00:00:00"
-                    )
+                    if(res.row == 1) {
+                        _overseer = Overseer(
+                            res.getInt("I_id"),
+                            res.getString("STR_EMP_name"),
+                            res.getDouble("F_wage"),
+                            res.getTimestamp("time_worked_journey")?.toString()
+                                ?: "2000-01-01 00:00:00"
+                        )
+                    }
                     println("Query OK! Object returned: ${_overseer}")
                 } catch (e: SQLException) {
                     e.printStackTrace()
@@ -128,7 +131,7 @@ class OverseerAccessor: OverseerAccessorImp {
                             res.getInt("I_id"),
                             res.getString("STR_EMP_name"),
                             res.getDouble("F_wage"),
-                            res.getTimestamp("time_worked_journey")?.toString()
+                            res.getTimestamp("time_worked_journey")?.toString() ?: "2000-01-01 00:00:00"
                         )
                         list.add(overseer)
                     }

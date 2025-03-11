@@ -37,7 +37,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import org.example.cahousing.DataSource.Models.Dept
 import org.example.cahousing.DataSource.Models.Project
 import org.example.cahousing.ViewModels.ProjectViewModel
 import java.sql.SQLException

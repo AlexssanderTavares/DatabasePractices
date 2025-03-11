@@ -104,11 +104,10 @@ class AddressAccessor : AddressAccessorImp{
     }
 
     override suspend fun get(varchar: String): Address? {
-        lateinit var data: Address
+        var data: Address? = null
         if(!formatter.isValid(varchar)) {
             throw IllegalArgumentException("${varchar} is not a valid postal code.")
         }
-
 
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {

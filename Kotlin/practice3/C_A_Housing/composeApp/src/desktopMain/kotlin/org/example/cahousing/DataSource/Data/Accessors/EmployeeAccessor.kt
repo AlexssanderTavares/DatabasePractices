@@ -27,9 +27,9 @@ class EmployeeAccessor : EmployeeAccessorImp {
     companion object {
         private var db: Connection = DataBaseConnection.CONNECTION
         private val formatter: Formatter = Cep()
-        private lateinit var projectAccessor: ProjectAccessorImp
-        private lateinit var contractAccessor: ProjectEmployeeContractAccessorImp
-        private lateinit var overseerAccessor: OverseerAccessorImp
+        private var projectAccessor: ProjectAccessorImp = ProjectAccessor()
+        private var contractAccessor: ProjectEmployeeContractAccessorImp = ProjectEmployeeContractAccessor()
+        private var overseerAccessor: OverseerAccessorImp = OverseerAccessor()
     }
 
     override suspend fun create(model: Employee): Int {
@@ -102,7 +102,7 @@ class EmployeeAccessor : EmployeeAccessorImp {
     }
 
     override suspend fun get(varchar: String): Employee? {
-        lateinit var employee: Employee
+        var employee: Employee? = null
         val job: Job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 val query: PreparedStatement =
@@ -212,7 +212,7 @@ class EmployeeAccessor : EmployeeAccessorImp {
                             res2.getString("STR_EMP_name"),
                             res2.getDouble("F_wage"),
                             res2.getTimestamp("time_worked_journey")?.toString()
-                                ?: "0000-00-00 00:00:00"
+                                ?: "2000-01-01 00:00:00"
                         )
                         overseerAccessor.delete(overseer)
                     }
